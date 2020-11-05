@@ -13,18 +13,22 @@ using namespace std;
 #define sALPHA 1 //ALPHA - weight of pheromone,
 #define sBETA 2  //BETA - weight of visibility
 #define sRHO 0.5 //RHO - evaporation coefficient
+#define sITER 5
 
 class antsColony
 {
 public:
-    antsColony(const char *fileName) : NUMOFANTS(sANTS), ALPHA(sALPHA), BETA(sBETA), RHO(sRHO)
+    antsColony(const char *fileName, int startCity, int finishCity) : NUMOFANTS(sANTS), ALPHA(sALPHA), BETA(sBETA), RHO(sRHO), startCity(startCity), finishCity(finishCity)
     {
         readData(fileName);
-        //initVectors();
     }
 
     int getNumOfCities();
     void setNumOfCities(int numOfCities);
+    //void setStartCity(int start);
+    int getStartCity();
+    //void setFinishCity(int finish);
+    int getFinishCity();
     int getNumOfAnts();
     double getAlpha();
     double getBeta();
@@ -34,14 +38,15 @@ public:
     void initVectors();
     void fillVectors(const char *fileName);
     void displayMatrices();
+    void bestRoute(int ITER);
 
 private:
     //----VARIABLES-- ----
 
-    int NUMOFANTS, NUMOFCITIES;
+    int NUMOFANTS, NUMOFCITIES, startCity, finishCity;
     double ALPHA, BETA, RHO;
 
-    vector<int> graph, routes, bestPath; //graph - stores information about connection with cities, routes - stores information about distance, bestPath - vector to store best Path
+    vector<int> graph, routes, antRoutes, bestPath; //graph - stores information about connection with cities, routes - stores information about distance, bestPath - vector to store best Path
     vector<float> visibility, pheromone, deltapheromone, probability;
 };
 
