@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -16,29 +17,32 @@ using namespace std;
 class antsColony
 {
 public:
-    antsColony(int numOfCities) : NUMOFANTS(sANTS), NUMOFCITIES(numOfCities), ALPHA(sALPHA), BETA(sBETA), RHO(sRHO)
+    antsColony(const char *fileName) : NUMOFANTS(sANTS), ALPHA(sALPHA), BETA(sBETA), RHO(sRHO)
     {
-        initVectors();
+        readData(fileName);
+        //initVectors();
     }
 
-    void readData(const char *filename);
-
-private:
     int getNumOfCities();
+    void setNumOfCities(int numOfCities);
     int getNumOfAnts();
     double getAlpha();
     double getBeta();
     double getRho();
 
+    void readData(const char *fileName);
     void initVectors();
+    void fillVectors(const char *fileName);
+    void displayMatrices();
 
+private:
     //----VARIABLES-- ----
 
     int NUMOFANTS, NUMOFCITIES;
     double ALPHA, BETA, RHO;
 
     vector<int> graph, routes, bestPath; //graph - stores information about connection with cities, routes - stores information about distance, bestPath - vector to store best Path
-    vector<double> visibility, pheromone, deltapheromone, probability;
+    vector<float> visibility, pheromone, deltapheromone, probability;
 };
 
 #endif
