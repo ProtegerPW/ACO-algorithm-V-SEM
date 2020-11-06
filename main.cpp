@@ -10,7 +10,7 @@ int main(int argc, char const *argv[])
     if (argc < 4)
         return 0;
 
-    antsColony ACO(argv[1], (int)argv[2], (int)argv[3]);
+    AntsColony ACO(argv[1], (int)argv[2], (int)argv[3]);
 
     return 0;
 }

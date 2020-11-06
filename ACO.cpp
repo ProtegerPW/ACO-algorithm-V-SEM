@@ -5,124 +5,69 @@
 
 using namespace std;
 
-int antsColony::getNumOfCities()
-{
-    return NUMOFCITIES;
-}
-
-void antsColony::setNumOfCities(int numOfCities)
-{
-    NUMOFCITIES = numOfCities;
-}
-
-// void antsColony::setStartCity(int start)
-// {
-//     startCity = start;
-// }
-int antsColony::getStartCity()
-{
-    return startCity;
-}
-// void antsColony::setFinishCity(int finish)
-// {
-//     finishCity = finish;
-// }
-int antsColony::getFinishCity()
-{
-    return finishCity;
-}
-
-int antsColony::getNumOfAnts()
-{
-    return NUMOFANTS;
-}
-
-double antsColony::getAlpha()
-{
-    return ALPHA;
-}
-
-double antsColony::getBeta()
-{
-    return BETA;
-}
-
-double antsColony::getRho()
-{
-    return RHO;
-}
-
-void antsColony::readData(const char *fileName)
+void AntsColony::readData(const char *file_name)
 {
     ifstream dataFile;
-    dataFile.open(fileName);
+    dataFile.open(file_name);
 
-    int a, b, c, numOfCities = 0;
+    int a, b, c, num_of_cities = 0;
     while (dataFile >> a >> b >> c) //read three num to find out num of cities
     {
-        if (a > numOfCities)
-            numOfCities = a;
-        if (b > numOfCities)
-            numOfCities = b;
+        if (a > num_of_cities)
+            num_of_cities = a;
+        if (b > num_of_cities)
+            num_of_cities = b;
     }
     dataFile.close();
-    setNumOfCities(numOfCities);
+    _num_of_cities = num_of_cities;
 
     initVectors();
-    fillVectors(fileName);
+    fillVectors(file_name);
 }
 
-void antsColony::initVectors()
+void AntsColony::initVectors()
 {
-    int powerOfCities = pow(getNumOfCities(), 2);
-    graph.assign(powerOfCities, 0);
-    antRoutes.assign(sANTS * getNumOfCities(), 0);
-    visibility.assign(powerOfCities, 0.0);
-    pheromone.assign(powerOfCities, 1.0);
-    deltapheromone.assign(powerOfCities, 0.0);
-    probability.assign(powerOfCities, 0.0);
-    displayMatrices();
+    // TODO?
 }
 
-void antsColony::displayMatrices()
+void AntsColony::displayMatrices()
 {
-    int numOf = getNumOfCities();
-    for (int i = 0; i < numOf; i++)
+    for (int i = 0; i < _num_of_cities; i++)
     {
-        for (int j = 0; j < numOf; j++)
+        for (int j = 0; j < _num_of_cities; j++)
         {
-            cout << graph[i * numOf + j] << " ";
+            cout << _graph[i * _num_of_cities + j] << " ";
         }
         cout << endl;
     }
 
     cout << endl;
 
-    for (int i = 0; i < numOf; i++)
+    for (int i = 0; i < _num_of_cities; i++)
     {
-        for (int j = 0; j < numOf; j++)
+        for (int j = 0; j < _num_of_cities; j++)
         {
-            cout << visibility[i * numOf + j] << " ";
+            cout << _visibility[i * _num_of_cities + j] << " ";
         }
         cout << endl;
     }
 }
 
-void antsColony::fillVectors(const char *fileName)
+void AntsColony::fillVectors(const char *file_name)
 {
     ifstream dataFile;
-    dataFile.open(fileName);
-    int a, b, c, numOf = getNumOfCities();
+    dataFile.open(file_name);
+    int a, b, c;
     while (dataFile >> a >> b >> c)
     {
-        graph[(a - 1) * numOf + (b - 1)] = graph[(b - 1) * numOf + (a - 1)] = c;
-        visibility[(a - 1) * numOf + (b - 1)] = visibility[(b - 1) * numOf + (a - 1)] = (1 / static_cast<double>(c));
+        _graph[(a - 1) * _num_of_cities + (b - 1)] = _graph[(b - 1) * _num_of_cities + (a - 1)] = c;
+        _visibility[(a - 1) * _num_of_cities + (b - 1)] = _visibility[(b - 1) * _num_of_cities + (a - 1)] = (1 / static_cast<double>(c));
     }
     dataFile.close();
     displayMatrices();
 }
 
-void antsColony::bestRoute()
+void AntsColony::bestRoute()
 {
     for (int i = 1; i <= sITER; i++)
     {
@@ -132,11 +77,11 @@ void antsColony::bestRoute()
         {
             cout << "Ant nr #" << j << " has started its adventure" << endl;
 
-            for (int k = 0; k < getNumOfCities(); k++)
+            for (int k = 0; k < _num_of_cities; k++)
             {
-                for (int l = 0; l < getNumOfCities(); l++)
+                for (int l = 0; l < _num_of_cities; l++)
                 {
-                    if (graph[(((getStartCity() - 1) + k) % getNumOfCities()) * getNumOfCities() + l] == 0)
+                    if (_graph[(((_start_city - 1) + k) % _num_of_cities) * _num_of_cities + l] == 0)
                         continue;
                     //TODO calculate prob of moving to this city
                 }
