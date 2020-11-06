@@ -7,6 +7,7 @@
 #include <vector>
 #include <list>
 #include <cmath>
+#include <numeric>
 
 using namespace std;
 
@@ -30,6 +31,7 @@ public:
     void addNode(int start, int stop);
     void displayMatrices();
     void bestRoute();
+    void sth(int start);
 
 private:
     //----VARIABLES-- ----

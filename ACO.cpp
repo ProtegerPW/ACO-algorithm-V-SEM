@@ -52,6 +52,7 @@ void AntsColony::fillVectors(const char *file_name)
     }
     dataFile.close();
     displayMatrices();
+    sth(_start_city);
 }
 
 void AntsColony::addNode(int start, int stop)
@@ -92,6 +93,42 @@ void AntsColony::displayMatrices()
     }
 }
 
+double randGen()
+{
+    return (double)rand() / RAND_MAX;
+}
+
+int getClosest(vector<double> input)
+{
+    auto const it = lower_bound(input.begin(), input.end(), randGen());
+    if (it == input.end())
+        return -1;
+
+    return it - input.begin();
+}
+
+void AntsColony::sth(int start)
+{
+
+    vector<double> calculations;
+    int multiplier = (start - 1) * _num_of_cities;
+
+    for (list<int>::iterator it = _nodes[start - 1].begin(); it != _nodes[start - 1].end(); ++it)
+    {
+        calculations.push_back(pow(_pheromone[multiplier + ((*it) - 1)], sALPHA) * _visibility[multiplier + ((*it) - 1)]);
+    }
+    double sum = accumulate(calculations.begin(), calculations.end(), 0);
+
+    for (int i = 0; i < calculations.size(); i++)
+    {
+        calculations[i] = (calculations[i] / sum);
+        if (i > 0)
+            calculations[i] = calculations[i] + calculations[i - 1];
+    }
+    cout << "Choosen path " << endl
+         << getClosest(calculations) << endl;
+}
+
 void AntsColony::bestRoute()
 {
     for (int i = 1; i <= sITER; i++)
@@ -117,5 +154,7 @@ void AntsColony::bestRoute()
 
 #endif
 
-//TODO calculate the possibility to visit other cities from the starter point
-//TODO set initialCity and
+//TODO #1 calculate the possibility to visit other cities from the starter point
+//TODO #2 generate random num between 0 and 1
+
+//TODO #3 sth to think of
