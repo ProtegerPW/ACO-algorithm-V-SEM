@@ -19,7 +19,7 @@ using namespace std;
 class AntsColony
 {
 public:
-    AntsColony(const char *file_name, int start_city, int finish_city): ALPHA(sALPHA), BETA(sBETA), RHO(sRHO), _start_city(start_city), _finish_city(finish_city)
+    AntsColony(const char *file_name, int start_city, int finish_city) : _start_city(start_city), _finish_city(finish_city)
     {
         readData(file_name);
     }
@@ -27,6 +27,7 @@ public:
     void readData(const char *file_name);
     void initVectors();
     void fillVectors(const char *file_name);
+    void addNode(int start, int stop);
     void displayMatrices();
     void bestRoute();
 
@@ -38,14 +39,14 @@ private:
 
     int _num_of_cities, _start_city, _finish_city;
 
-    vector<list<int>> _nodes;               // wierzcholki + lista sciezek od wierzcholka
-    
-    int *_graph;                            // macierz odleglosci pomiedzy miastami
-    double *_visibility, *_pheromone;       // visibility - macierz odwrotna do graph
-                                            // pheromone - macierz rozkladu feromonow
-    
-    list<vector<int>> _ant_paths;           // lista sciezek obranych przez mrowki
-    vector<int> _best_path;                 // struktura pomocnicza przechowujaca najlepsza sciezke
+    vector<list<int>> _nodes; // wierzcholki + lista sciezek od wierzcholka
+
+    int *_graph;                      // macierz odleglosci pomiedzy miastami
+    double *_visibility, *_pheromone; // visibility - macierz odwrotna do graph
+                                      // pheromone - macierz rozkladu feromonow
+
+    list<vector<int>> _ant_paths; // lista sciezek obranych przez mrowki
+    vector<int> _best_path;       // struktura pomocnicza przechowujaca najlepsza sciezke
 };
 
 #endif

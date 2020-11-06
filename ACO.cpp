@@ -11,7 +11,7 @@ void AntsColony::readData(const char *file_name)
     dataFile.open(file_name);
 
     int a, b, c, num_of_cities = 0;
-    while (dataFile >> a >> b >> c) //read three num to find out num of cities
+    while (dataFile >> a >> b >> c) //scan file to count num_of_cities
     {
         if (a > num_of_cities)
             num_of_cities = a;
@@ -27,7 +27,37 @@ void AntsColony::readData(const char *file_name)
 
 void AntsColony::initVectors()
 {
-    // TODO?
+    int pow_num_of_cities = pow(_num_of_cities, 2);
+    _graph = new int[pow_num_of_cities]();
+    _visibility = new double[pow_num_of_cities]();
+    _pheromone = new double[pow_num_of_cities]();
+    //TODO init _pheromone table?
+    for (int i = 0; i < _num_of_cities; i++)
+    {
+        list<int> temp;
+        _nodes.push_back(temp);
+    }
+}
+
+void AntsColony::fillVectors(const char *file_name)
+{
+    ifstream dataFile;
+    dataFile.open(file_name);
+    int a, b, c;
+    while (dataFile >> a >> b >> c)
+    {
+        _graph[(a - 1) * _num_of_cities + (b - 1)] = _graph[(b - 1) * _num_of_cities + (a - 1)] = c;
+        _visibility[(a - 1) * _num_of_cities + (b - 1)] = _visibility[(b - 1) * _num_of_cities + (a - 1)] = pow((1 / static_cast<double>(c)), sBETA);
+        addNode(a, b);
+    }
+    dataFile.close();
+    displayMatrices();
+}
+
+void AntsColony::addNode(int start, int stop)
+{
+    _nodes[start - 1].insert(_nodes[start - 1].end(), stop);
+    _nodes[stop - 1].insert(_nodes[stop - 1].end(), start);
 }
 
 void AntsColony::displayMatrices()
@@ -51,20 +81,15 @@ void AntsColony::displayMatrices()
         }
         cout << endl;
     }
-}
 
-void AntsColony::fillVectors(const char *file_name)
-{
-    ifstream dataFile;
-    dataFile.open(file_name);
-    int a, b, c;
-    while (dataFile >> a >> b >> c)
+    for (int i = 0; i < _num_of_cities; i++)
     {
-        _graph[(a - 1) * _num_of_cities + (b - 1)] = _graph[(b - 1) * _num_of_cities + (a - 1)] = c;
-        _visibility[(a - 1) * _num_of_cities + (b - 1)] = _visibility[(b - 1) * _num_of_cities + (a - 1)] = (1 / static_cast<double>(c));
+        for (list<int>::iterator it = _nodes[i].begin(); it != _nodes[i].end(); ++it)
+        {
+            cout << (*it) << " ";
+        }
+        cout << endl;
     }
-    dataFile.close();
-    displayMatrices();
 }
 
 void AntsColony::bestRoute()
