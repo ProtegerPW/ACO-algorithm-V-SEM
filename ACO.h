@@ -38,7 +38,7 @@ public:
     void initVectors();
     void fillVectors(const char *fileName);
     void displayMatrices();
-    void bestRoute(int ITER);
+    void bestRoute();
 
 private:
     //----VARIABLES-- ----
@@ -46,7 +46,7 @@ private:
     int NUMOFANTS, NUMOFCITIES, startCity, finishCity;
     double ALPHA, BETA, RHO;
 
-    vector<int> graph, routes, antRoutes, bestPath; //graph - stores information about connection with cities, routes - stores information about distance, bestPath - vector to store best Path
+    vector<int> graph, antRoutes, bestPath; //graph - stores information about distance, bestPath - vector to store best Path
     vector<float> visibility, pheromone, deltapheromone, probability;
 };
 

@@ -15,18 +15,18 @@ void antsColony::setNumOfCities(int numOfCities)
     NUMOFCITIES = numOfCities;
 }
 
-void antsColony::setStartCity(int start)
-{
-    startCity = start;
-}
+// void antsColony::setStartCity(int start)
+// {
+//     startCity = start;
+// }
 int antsColony::getStartCity()
 {
     return startCity;
 }
-void antsColony::setFinishCity(int finish)
-{
-    finishCity = finish;
-}
+// void antsColony::setFinishCity(int finish)
+// {
+//     finishCity = finish;
+// }
 int antsColony::getFinishCity()
 {
     return finishCity;
@@ -76,7 +76,6 @@ void antsColony::initVectors()
 {
     int powerOfCities = pow(getNumOfCities(), 2);
     graph.assign(powerOfCities, 0);
-    routes.assign(powerOfCities, 0);
     antRoutes.assign(sANTS * getNumOfCities(), 0);
     visibility.assign(powerOfCities, 0.0);
     pheromone.assign(powerOfCities, 1.0);
@@ -103,17 +102,6 @@ void antsColony::displayMatrices()
     {
         for (int j = 0; j < numOf; j++)
         {
-            cout << routes[i * numOf + j] << " ";
-        }
-        cout << endl;
-    }
-
-    cout << endl;
-
-    for (int i = 0; i < numOf; i++)
-    {
-        for (int j = 0; j < numOf; j++)
-        {
             cout << visibility[i * numOf + j] << " ";
         }
         cout << endl;
@@ -127,8 +115,7 @@ void antsColony::fillVectors(const char *fileName)
     int a, b, c, numOf = getNumOfCities();
     while (dataFile >> a >> b >> c)
     {
-        graph[(a - 1) * numOf + (b - 1)] = graph[(b - 1) * numOf + (a - 1)] = 1;
-        routes[(a - 1) * numOf + (b - 1)] = routes[(b - 1) * numOf + (a - 1)] = c;
+        graph[(a - 1) * numOf + (b - 1)] = graph[(b - 1) * numOf + (a - 1)] = c;
         visibility[(a - 1) * numOf + (b - 1)] = visibility[(b - 1) * numOf + (a - 1)] = (1 / static_cast<double>(c));
     }
     dataFile.close();
@@ -149,7 +136,7 @@ void antsColony::bestRoute()
             {
                 for (int l = 0; l < getNumOfCities(); l++)
                 {
-                    if (graph[(((getStartCity() - 1) + k) % getNumOfCities) * getNumOfCities + l] == 0)
+                    if (graph[(((getStartCity() - 1) + k) % getNumOfCities()) * getNumOfCities() + l] == 0)
                         continue;
                     //TODO calculate prob of moving to this city
                 }
