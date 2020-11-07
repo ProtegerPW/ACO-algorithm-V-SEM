@@ -32,8 +32,8 @@ public:
     void displayMatrices();
 
     void bestRoute();
-    void chooseNextNode(int start, int ant);
-    void addCityToAnt(int start, int path, int ant);
+    void chooseNextCity(int ant);
+    void addCityToAnt(int path, int ant);
     bool isVisited(int city, int ant);
 
 private:

@@ -68,7 +68,8 @@ void AntsColony::fillMatrices(const char *file_name)
     }
     dataFile.close();
     displayMatrices();
-    // chooseNextNode(_start_node, 1);                // ?
+    chooseNextCity(1);
+    cout << "End for ant #1" << endl;
 }
 
 void AntsColony::addEdge(int id_node1, int id_node2)
@@ -118,15 +119,15 @@ double randGen()
     return temp;
 }
 
-double getNearest(double x, double y, double target)
+int getNearest(pair<int, double> x, pair<int, double> y, double target)
 {
-    if (target - x >= y - target)
-        return y;
+    if (target - x.second >= y.second - target)
+        return y.first;
     else
-        return x;
+        return x.first;
 }
 
-double getClosest(vector<double> input)
+int getClosest(vector<pair<int, double>> input)
 {
     double target = randGen();
     int left = 0, right = input.size(), mid = 0;
@@ -134,20 +135,22 @@ double getClosest(vector<double> input)
     while (left < right)
     {
         mid = (left + right) / 2;
-        if (target < input[mid])
+        if (target < input[mid].second)
         {
-            if (mid > 0 && target > input[mid - 1])
+            if (mid > 0 && target > input[mid - 1].second)
                 return getNearest(input[mid - 1], input[mid], target);
             right = mid;
         }
         else
         {
-            if (mid < input.size() - 1 && target < input[mid + 1])
+            if (mid < input.size() - 1 && target < input[mid + 1].second)
                 return getNearest(input[mid], input[mid + 1], target);
             left = mid + 1;
         }
     }
-    return input[mid];
+    cout << " Vertice of chosen city is: " << input[mid].first
+         << endl;
+    return input[mid].first;
 }
 
 bool AntsColony::isVisited(int city, int ant)
@@ -158,64 +161,60 @@ bool AntsColony::isVisited(int city, int ant)
         return false;
 }
 
-void AntsColony::chooseNextNode(int start, int ant)
+void AntsColony::chooseNextCity(int ant)
 {
-    _ant_paths[ant].push_back(start); // add start city
+    _ant_paths[ant].push_back(_start_city); // add start city at the begging of vector
 
-    for (int j = 0; j < _num_of_nodes; j++)
+    // for (int j = 0; j < _num_of_cities; j++)
+    int activeCity = 0, choseCity = _start_city;
+
+    while (_ant_paths[ant].back() != _finish_city)
     {
-        int activeCity = (start + j) % _num_of_nodes;
+        activeCity = choseCity;
+
         cout << "active City: " << activeCity << endl;
 
-        //pomijamy miasto zerowe
-        if (activeCity == 0)
-            continue;
+        //stała do wyliczenia miast w macierzy grafu
+        int multiplier = activeCity * _num_of_cities;
+        vector<pair<int, double>> calculations;
 
-        //pomijamy miasto, jeżeli mrówka już przez nie przeszła
-        if (j != 0 && isVisited(activeCity, ant))
-            continue;
-
-        int multiplier = activeCity * _num_of_nodes;
-        vector<double> calculations;
-
-        for (list<int>::iterator it = _connections[activeCity].begin(); it != _connections[activeCity].end(); ++it)
+        //szukamy połaczeń z miasta w którym się znajduje mrówka
+        for (list<int>::iterator it = _nodes[activeCity].begin(); it != _nodes[activeCity].end(); ++it)
         {
-            cout << "Cout city " << *it << endl;
+            cout << "Cout city " << *it << endl; //debug
             if (isVisited((*it), ant))
+            {
                 continue;
-
-            calculations.push_back(pow(_pheromone[multiplier + (*it)], sALPHA) * _visibility[multiplier + (*it)]);
+            }
+            //wyliczenie pierwszej składowej równania (licznika)
+            calculations.push_back(make_pair((*it), pow(_pheromone[multiplier + (*it)], sALPHA) * _visibility[multiplier + (*it)]));
         }
-        double sum = accumulate(calculations.begin(), calculations.end(), 0.0);
+        //skończ liczyć trasę, jeżeli nie ma miast do odwiedzenia
+        if (calculations.size() == 0)
+            break;
 
-        //debbuging -------------------------------------------
-        cout << "Probability: " << endl;
-        for (double temp : calculations)
-        {
-            cout << temp << endl;
-        }
-        cout << endl;
-        cout << "Calculations size: " << calculations.size() << endl;
-        //----------------------------------------------------
+        double sum = accumulate(calculations.begin(), calculations.end(), 0.0, [](auto &a, auto &b) { return a + b.second; });
 
+        //obliczenia prawdopodobieństwa wybrania miasta
         for (int i = 0; i < calculations.size(); i++)
         {
-            calculations[i] = (calculations[i] / sum);
+            calculations[i].second = (calculations[i].second / sum);
             if (i > 0)
-                calculations[i] = calculations[i] + calculations[i - 1];
-            cout << " #" << i << " " << calculations[i] << endl;
+                calculations[i].second = calculations[i].second + calculations[i - 1].second;
+            cout << " #" << i << " " << calculations[i].second << endl; //debug
         }
-        vector<double>::iterator it = find(calculations.begin(), calculations.end(), getClosest(calculations));
-        cout << "Choosen path " << it - calculations.begin() << endl;
-        addCityToAnt(start, it - calculations.begin(), ant);
+        //wybranie miasta najbliżej losowej wartośći z przedziału (0,1)
+        choseCity = getClosest(calculations);
+        cout << "Choosen city:  " << choseCity << endl;
+        addCityToAnt(choseCity, ant);
+        if (choseCity == _finish_city)
+            break;
     }
 }
 
-void AntsColony::addCityToAnt(int start, int path, int ant)
+void AntsColony::addCityToAnt(int city, int ant)
 {
-    list<int>::iterator it = _connections[start].begin();
-    advance(it, path);
-    _ant_paths[ant].push_back(*it);
+    _ant_paths[ant].push_back(city);
 
     cout << "Ant #" << ant << " goes through ";
 
@@ -242,14 +241,14 @@ void AntsColony::bestRoute()
                 {
                     if (_graph[(((_start_node - 1) + k) % _num_of_nodes) * _num_of_nodes + l] == 0)
                         continue;
-                    //TODO calculate prob of moving to this city
                 }
             }
         }
     }
 }
 
-//TODO #1 calculate the possibility to visit other cities from the starter point
-//TODO #2 generate random num between 0 and 1
+#endif
 
+//TODO #1 dodać fun aktualizującą poziom feronomu na ścieżce
+//TODO #2 dodać fun liczącą długość ścieżki i porównującą ją z obecnym rekordem
 //TODO #3 sth to think of
