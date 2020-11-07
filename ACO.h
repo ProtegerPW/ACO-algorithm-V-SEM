@@ -8,6 +8,7 @@
 #include <list>
 #include <cmath>
 #include <numeric>
+#include <algorithm>
 
 using namespace std;
 

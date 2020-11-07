@@ -31,6 +31,10 @@ void AntsColony::initVectors()
     _graph = new int[pow_num_of_cities]();
     _visibility = new double[pow_num_of_cities]();
     _pheromone = new double[pow_num_of_cities]();
+    for (int i = 0; i < pow(_num_of_cities, 2); i++)
+    {
+        _pheromone[i] = 1.0;
+    }
     //TODO init _pheromone table?
     for (int i = 0; i < _num_of_cities; i++)
     {
@@ -95,16 +99,42 @@ void AntsColony::displayMatrices()
 
 double randGen()
 {
-    return (double)rand() / RAND_MAX;
+    srand(time(NULL));
+    double temp = (double)rand() / RAND_MAX;
+    cout << " Random #" << temp << endl;
+    return temp;
 }
 
-int getClosest(vector<double> input)
+double getNearest(double x, double y, double target)
 {
-    auto const it = lower_bound(input.begin(), input.end(), randGen());
-    if (it == input.end())
-        return -1;
+    if (target - x >= y - target)
+        return y;
+    else
+        return x;
+}
 
-    return it - input.begin();
+double getClosest(vector<double> input)
+{
+    double target = randGen();
+    int left = 0, right = input.size(), mid = 0;
+
+    while (left < right)
+    {
+        mid = (left + right) / 2;
+        if (target < input[mid])
+        {
+            if (mid > 0 && target > input[mid - 1])
+                return getNearest(input[mid - 1], input[mid], target);
+            right = mid;
+        }
+        else
+        {
+            if (mid < input.size() - 1 && target < input[mid + 1])
+                return getNearest(input[mid], input[mid + 1], target);
+            left = mid + 1;
+        }
+    }
+    return input[mid];
 }
 
 void AntsColony::sth(int start)
@@ -117,16 +147,27 @@ void AntsColony::sth(int start)
     {
         calculations.push_back(pow(_pheromone[multiplier + ((*it) - 1)], sALPHA) * _visibility[multiplier + ((*it) - 1)]);
     }
-    double sum = accumulate(calculations.begin(), calculations.end(), 0);
+    double sum = accumulate(calculations.begin(), calculations.end(), 0.0);
+
+    //debbuging -------------------------------------------
+    cout << endl;
+    for (double temp : calculations)
+    {
+        cout << temp << endl;
+    }
+    cout << endl;
+    cout << calculations.size() << endl;
+    //----------------------------------------------------
 
     for (int i = 0; i < calculations.size(); i++)
     {
         calculations[i] = (calculations[i] / sum);
         if (i > 0)
             calculations[i] = calculations[i] + calculations[i - 1];
+        cout << calculations[i] << endl;
     }
-    cout << "Choosen path " << endl
-         << getClosest(calculations) << endl;
+    auto it = find(calculations.begin(), calculations.end(), getClosest(calculations));
+    cout << "Choosen path " << it - calculations.begin() << endl;
 }
 
 void AntsColony::bestRoute()
