@@ -12,8 +12,13 @@ int main(int argc, char const *argv[])
         cout << "Not enough arguments" << endl;
         return 0;
     }
+    int id_start_node = atoi(argv[2]), id_end_node = atoi(argv[3]);
+    const char *file_name = argv[1];
 
-    AntsColony ACO(argv[1], atoi(argv[2]), atoi(argv[3]));
-
+    AntsColony ACO(id_start_node, id_end_node);
+    ACO.scanData(file_name);
+    ACO.initMatrices();
+    ACO.fillMatrices(file_name);
+    // ACO.findOptimisedRoute(id_start_node, id_end_node);
     return 0;
 }

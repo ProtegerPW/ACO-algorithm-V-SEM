@@ -12,6 +12,7 @@
 
 using namespace std;
 
+// TODO config file
 #define sANTS 5
 #define sALPHA 1 //ALPHA - weight of pheromone,
 #define sBETA 2  //BETA - weight of visibility
@@ -21,37 +22,37 @@ using namespace std;
 class AntsColony
 {
 public:
-    AntsColony(const char *file_name, int start_city, int finish_city) : _start_city(start_city), _finish_city(finish_city)
-    {
-        readData(file_name);
-    }
+    AntsColony(int start_node, int finish_node): _start_node(start_node), _finish_node(finish_node) { }
+    ~AntsColony();
 
-    void readData(const char *file_name);
+    void scanData(const char *file_name);
     void initMatrices();
     void fillMatrices(const char *file_name);
-    void addNode(int start, int stop);
+
     void displayMatrices();
+
     void bestRoute();
-    void chooseNextCity(int start, int ant);
+    void chooseNextNode(int start, int ant);
     void addCityToAnt(int start, int path, int ant);
     bool isVisited(int city, int ant);
 
 private:
-    //----VARIABLES-- ----
+    void addEdge(int id_node1, int id_node2);
+
 
     const int NUM_OF_ANTS = sANTS;
     const double ALPHA = sALPHA, BETA = sBETA, RHO = sRHO;
 
-    int _num_of_cities, _start_city, _finish_city;
+    int _num_of_nodes, _start_node, _finish_node;
 
-    vector<list<int>> _nodes; // wierzcholki + lista sciezek od wierzcholka
+    vector<list<int>> _connections;   // wierzcholki + lista sciezek od wierzcholka
 
     int *_graph;                      // macierz odleglosci pomiedzy miastami
     double *_visibility, *_pheromone; // visibility - macierz odwrotna do graph
                                       // pheromone - macierz rozkladu feromonow
 
-    vector<vector<int>> _ant_paths; // lista sciezek obranych przez mrowki
-    vector<int> _best_path;         // struktura pomocnicza przechowujaca najlepsza sciezke
+    vector<vector<int>> _ant_paths;   // lista sciezek obranych przez mrowki
+    vector<int> _best_path;           // struktura pomocnicza przechowujaca najlepsza sciezke
 };
 
 #endif

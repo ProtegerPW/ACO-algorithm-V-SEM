@@ -1,48 +1,48 @@
-#ifndef _ACO_C_
-#define _ACO_C_
-
 #include "ACO.h"
 
-using namespace std;
+AntsColony::~AntsColony() {
+    delete _graph;
+    delete _visibility;
+    delete _pheromone;
+}
 
-void AntsColony::readData(const char *file_name)
+void AntsColony::scanData(const char *file_name)
 {
     ifstream dataFile;
     dataFile.open(file_name);
-
-    int a, b, c, num_of_cities = 0;
-    while (dataFile >> a >> b >> c) //scan file to count num_of_cities
+    // TODO if fails -> abort mission
+    int id_node1, id_node2, junk, max_id = 0;
+    while (dataFile >> id_node1 >> id_node2 >> junk)    // looking for maximum node ID in the file
     {
-        if (a > num_of_cities)
-            num_of_cities = a;
-        if (b > num_of_cities)
-            num_of_cities = b;
+        if (id_node1 > max_id)
+            max_id = id_node1;
+        if (id_node2 > max_id)
+            max_id = id_node2;
     }
     dataFile.close();
-    _num_of_cities = num_of_cities + 1;
-
-    initMatrices();
-    fillMatrices(file_name);
+    _num_of_nodes = ++max_id;
 }
 
 void AntsColony::initMatrices()
 {
-    int pow_num_of_cities = pow(_num_of_cities, 2);
-    _graph = new int[pow_num_of_cities]();
-    _visibility = new double[pow_num_of_cities]();
-    _pheromone = new double[pow_num_of_cities]();
-    for (int i = 0; i < pow_num_of_cities; i++)
+    int pow_num_of_nodes = pow(_num_of_nodes, 2);
+
+    _graph = new int[pow_num_of_nodes]();
+    _visibility = new double[pow_num_of_nodes]();
+    _pheromone = new double[pow_num_of_nodes]();
+
+    for (int i = 0; i < pow_num_of_nodes; i++)
     {
         _pheromone[i] = 1.0;
     }
 
-    for (int i = 0; i < _num_of_cities; i++)
+    for (int i = 0; i < _num_of_nodes + 1; i++)
     {
         list<int> temp;
-        _nodes.push_back(temp);
+        _connections.push_back(temp);
     }
 
-    for (int i = 0; i < sANTS + 1; i++)
+    for (int i = 0; i < NUM_OF_ANTS + 1; i++)       // ?
     {
         vector<int> temp;
         _ant_paths.push_back(temp);
@@ -53,59 +53,55 @@ void AntsColony::fillMatrices(const char *file_name)
 {
     ifstream dataFile;
     dataFile.open(file_name);
-    int a, b, c;
-    while (dataFile >> a >> b >> c)
+    // TODO if fails -> abort mission
+    int id_node1, id_node2, weight;
+    int matrix_pos1, matrix_pos2;
+    while (dataFile >> id_node1 >> id_node2 >> weight)
     {
-        _graph[a * _num_of_cities + b] = _graph[b * _num_of_cities + a] = c;
-        _visibility[a * _num_of_cities + b] = _visibility[b * _num_of_cities + a] = pow((1 / static_cast<double>(c)), sBETA);
-        addNode(a, b);
+        matrix_pos1 = id_node1 * _num_of_nodes + id_node2;
+        matrix_pos2 = id_node2 * _num_of_nodes + id_node1;
+
+        _graph[matrix_pos1] = _graph[matrix_pos2] = weight;
+        _visibility[matrix_pos1] = _visibility[matrix_pos2] = pow((1 / static_cast<double>(weight)), sBETA);
+        
+        addEdge(id_node1, id_node2);
     }
     dataFile.close();
     displayMatrices();
-    chooseNextCity(_start_city, 1);
+    // chooseNextNode(_start_node, 1);                // ?
 }
 
-void AntsColony::addNode(int start, int stop)
+void AntsColony::addEdge(int id_node1, int id_node2)
 {
-    _nodes[start].insert(_nodes[start].end(), stop);
-    _nodes[stop].insert(_nodes[stop].end(), start);
+    _connections[id_node1].push_back(id_node2);
+    _connections[id_node2].push_back(id_node1);
 }
 
 void AntsColony::displayMatrices()
 {
-    for (int i = 0; i < _num_of_cities; i++)
+    for (int i = 1; i < _num_of_nodes; i++)
     {
-        if (i == 0)
-            continue;
-        for (int j = 0; j < _num_of_cities; j++)
+        for (int j = 1; j < _num_of_nodes; j++)
         {
-            if (j == 0)
-                continue;
-            cout << _graph[i * _num_of_cities + j] << " ";
+            cout << _graph[i * _num_of_nodes + j] << " ";
         }
         cout << endl;
     }
 
     cout << endl;
 
-    for (int i = 0; i < _num_of_cities; i++)
+    for (int i = 1; i < _num_of_nodes; i++)
     {
-        if (i == 0)
-            continue;
-        for (int j = 0; j < _num_of_cities; j++)
+        for (int j = 1; j < _num_of_nodes; j++)
         {
-            if (j == 0)
-                continue;
-            cout << _visibility[i * _num_of_cities + j] << " ";
+            cout << _visibility[i * _num_of_nodes + j] << " ";
         }
         cout << endl;
     }
 
-    for (int i = 0; i < _num_of_cities; i++)
+    for (int i = 1; i < _num_of_nodes; i++)
     {
-        if (i == 0)
-            continue;
-        for (list<int>::iterator it = _nodes[i].begin(); it != _nodes[i].end(); ++it)
+        for (list<int>::iterator it = _connections[i].begin(); it != _connections[i].end(); ++it)
         {
             cout << (*it) << " ";
         }
@@ -113,6 +109,7 @@ void AntsColony::displayMatrices()
     }
 }
 
+    // TODO implement <0,1) distribution from <random>
 double randGen()
 {
     srand(time(NULL));
@@ -161,13 +158,13 @@ bool AntsColony::isVisited(int city, int ant)
         return false;
 }
 
-void AntsColony::chooseNextCity(int start, int ant)
+void AntsColony::chooseNextNode(int start, int ant)
 {
     _ant_paths[ant].push_back(start); // add start city
 
-    for (int j = 0; j < _num_of_cities; j++)
+    for (int j = 0; j < _num_of_nodes; j++)
     {
-        int activeCity = (start + j) % _num_of_cities;
+        int activeCity = (start + j) % _num_of_nodes;
         cout << "active City: " << activeCity << endl;
 
         //pomijamy miasto zerowe
@@ -178,10 +175,10 @@ void AntsColony::chooseNextCity(int start, int ant)
         if (j != 0 && isVisited(activeCity, ant))
             continue;
 
-        int multiplier = activeCity * _num_of_cities;
+        int multiplier = activeCity * _num_of_nodes;
         vector<double> calculations;
 
-        for (list<int>::iterator it = _nodes[activeCity].begin(); it != _nodes[activeCity].end(); ++it)
+        for (list<int>::iterator it = _connections[activeCity].begin(); it != _connections[activeCity].end(); ++it)
         {
             cout << "Cout city " << *it << endl;
             if (isVisited((*it), ant))
@@ -216,7 +213,7 @@ void AntsColony::chooseNextCity(int start, int ant)
 
 void AntsColony::addCityToAnt(int start, int path, int ant)
 {
-    list<int>::iterator it = _nodes[start].begin();
+    list<int>::iterator it = _connections[start].begin();
     advance(it, path);
     _ant_paths[ant].push_back(*it);
 
@@ -239,11 +236,11 @@ void AntsColony::bestRoute()
         {
             cout << "Ant nr #" << j << " has started its adventure" << endl;
 
-            for (int k = 0; k < _num_of_cities; k++)
+            for (int k = 0; k < _num_of_nodes; k++)
             {
-                for (int l = 0; l < _num_of_cities; l++)
+                for (int l = 0; l < _num_of_nodes; l++)
                 {
-                    if (_graph[(((_start_city - 1) + k) % _num_of_cities) * _num_of_cities + l] == 0)
+                    if (_graph[(((_start_node - 1) + k) % _num_of_nodes) * _num_of_nodes + l] == 0)
                         continue;
                     //TODO calculate prob of moving to this city
                 }
@@ -251,8 +248,6 @@ void AntsColony::bestRoute()
         }
     }
 }
-
-#endif
 
 //TODO #1 calculate the possibility to visit other cities from the starter point
 //TODO #2 generate random num between 0 and 1
