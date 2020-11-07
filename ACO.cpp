@@ -121,15 +121,15 @@ double randGen()
     return temp;
 }
 
-double getNearest(double x, double y, double target)
+int getNearest(pair<int, double> x, pair<int, double> y, double target)
 {
-    if (target - x >= y - target)
-        return y;
+    if (target - x.second >= y.second - target)
+        return y.first;
     else
-        return x;
+        return x.first;
 }
 
-double getClosest(vector<double> input)
+int getClosest(vector<pair<int, double>> input)
 {
     double target = randGen();
     int left = 0, right = input.size(), mid = 0;
@@ -137,20 +137,22 @@ double getClosest(vector<double> input)
     while (left < right)
     {
         mid = (left + right) / 2;
-        if (target < input[mid])
+        if (target < input[mid].second)
         {
-            if (mid > 0 && target > input[mid - 1])
+            if (mid > 0 && target > input[mid - 1].second)
                 return getNearest(input[mid - 1], input[mid], target);
             right = mid;
         }
         else
         {
-            if (mid < input.size() - 1 && target < input[mid + 1])
+            if (mid < input.size() - 1 && target < input[mid + 1].second)
                 return getNearest(input[mid], input[mid + 1], target);
             left = mid + 1;
         }
     }
-    return input[mid];
+    cout << " Vertice of chosen city is: " << input[mid].first
+         << endl;
+    return input[mid].first;
 }
 
 bool AntsColony::isVisited(int city, int ant)
@@ -179,46 +181,36 @@ void AntsColony::chooseNextCity(int start, int ant)
             continue;
 
         int multiplier = activeCity * _num_of_cities;
-        vector<double> calculations;
+        vector<pair<int, double>> calculations;
 
         for (list<int>::iterator it = _nodes[activeCity].begin(); it != _nodes[activeCity].end(); ++it)
         {
             cout << "Cout city " << *it << endl;
             if (isVisited((*it), ant))
+            {
                 continue;
+            }
 
-            calculations.push_back(pow(_pheromone[multiplier + (*it)], sALPHA) * _visibility[multiplier + (*it)]);
+            calculations.push_back(make_pair((*it), pow(_pheromone[multiplier + (*it)], sALPHA) * _visibility[multiplier + (*it)]));
         }
-        double sum = accumulate(calculations.begin(), calculations.end(), 0.0);
-
-        //debbuging -------------------------------------------
-        cout << "Probability: " << endl;
-        for (double temp : calculations)
-        {
-            cout << temp << endl;
-        }
-        cout << endl;
-        cout << "Calculations size: " << calculations.size() << endl;
-        //----------------------------------------------------
+        double sum = accumulate(calculations.begin(), calculations.end(), 0.0, [](auto &a, auto &b) { return a + b.second; });
 
         for (int i = 0; i < calculations.size(); i++)
         {
-            calculations[i] = (calculations[i] / sum);
+            calculations[i].second = (calculations[i].second / sum);
             if (i > 0)
-                calculations[i] = calculations[i] + calculations[i - 1];
-            cout << " #" << i << " " << calculations[i] << endl;
+                calculations[i].second = calculations[i].second + calculations[i - 1].second;
+            cout << " #" << i << " " << calculations[i].second << endl;
         }
-        vector<double>::iterator it = find(calculations.begin(), calculations.end(), getClosest(calculations));
-        cout << "Choosen path " << it - calculations.begin() << endl;
-        addCityToAnt(start, it - calculations.begin(), ant);
+        int choseCity = getClosest(calculations);
+        cout << "Choosen city:  " << choseCity << endl;
+        addCityToAnt(choseCity, ant);
     }
 }
 
-void AntsColony::addCityToAnt(int start, int path, int ant)
+void AntsColony::addCityToAnt(int city, int ant)
 {
-    list<int>::iterator it = _nodes[start].begin();
-    advance(it, path);
-    _ant_paths[ant].push_back(*it);
+    _ant_paths[ant].push_back(city);
 
     cout << "Ant #" << ant << " goes through ";
 
