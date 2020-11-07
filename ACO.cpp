@@ -244,7 +244,6 @@ void AntsColony::bestRoute()
                 {
                     if (_graph[(((_start_city - 1) + k) % _num_of_cities) * _num_of_cities + l] == 0)
                         continue;
-                    //TODO calculate prob of moving to this city
                 }
             }
         }
@@ -253,7 +252,6 @@ void AntsColony::bestRoute()
 
 #endif
 
-//TODO #1 calculate the possibility to visit other cities from the starter point
-//TODO #2 generate random num between 0 and 1
-
+//TODO #1 dodać fun aktualizującą poziom feronomu na ścieżce
+//TODO #2 dodać fun liczącą długość ścieżki i porównującą ją z obecnym rekordem
 //TODO #3 sth to think of
