@@ -32,7 +32,7 @@ public:
     void addNode(int start, int stop);
     void displayMatrices();
     void bestRoute();
-    void chooseNextCity(int start, int ant);
+    void chooseNextCity(int ant);
     void addCityToAnt(int path, int ant);
     bool isVisited(int city, int ant);
 

@@ -62,7 +62,8 @@ void AntsColony::fillMatrices(const char *file_name)
     }
     dataFile.close();
     displayMatrices();
-    chooseNextCity(_start_city, 1);
+    chooseNextCity(1);
+    cout << "End for ant #1" << endl;
 }
 
 void AntsColony::addNode(int start, int stop)
@@ -163,48 +164,54 @@ bool AntsColony::isVisited(int city, int ant)
         return false;
 }
 
-void AntsColony::chooseNextCity(int start, int ant)
+void AntsColony::chooseNextCity(int ant)
 {
-    _ant_paths[ant].push_back(start); // add start city
+    _ant_paths[ant].push_back(_start_city); // add start city at the begging of vector
 
-    for (int j = 0; j < _num_of_cities; j++)
+    // for (int j = 0; j < _num_of_cities; j++)
+    int activeCity = 0, choseCity = _start_city;
+
+    while (_ant_paths[ant].back() != _finish_city)
     {
-        int activeCity = (start + j) % _num_of_cities;
+        activeCity = choseCity;
+
         cout << "active City: " << activeCity << endl;
 
-        //pomijamy miasto zerowe
-        if (activeCity == 0)
-            continue;
-
-        //pomijamy miasto, jeżeli mrówka już przez nie przeszła
-        if (j != 0 && isVisited(activeCity, ant))
-            continue;
-
+        //stała do wyliczenia miast w macierzy grafu
         int multiplier = activeCity * _num_of_cities;
         vector<pair<int, double>> calculations;
 
+        //szukamy połaczeń z miasta w którym się znajduje mrówka
         for (list<int>::iterator it = _nodes[activeCity].begin(); it != _nodes[activeCity].end(); ++it)
         {
-            cout << "Cout city " << *it << endl;
+            cout << "Cout city " << *it << endl; //debug
             if (isVisited((*it), ant))
             {
                 continue;
             }
-
+            //wyliczenie pierwszej składowej równania (licznika)
             calculations.push_back(make_pair((*it), pow(_pheromone[multiplier + (*it)], sALPHA) * _visibility[multiplier + (*it)]));
         }
+        //skończ liczyć trasę, jeżeli nie ma miast do odwiedzenia
+        if (calculations.size() == 0)
+            break;
+
         double sum = accumulate(calculations.begin(), calculations.end(), 0.0, [](auto &a, auto &b) { return a + b.second; });
 
+        //obliczenia prawdopodobieństwa wybrania miasta
         for (int i = 0; i < calculations.size(); i++)
         {
             calculations[i].second = (calculations[i].second / sum);
             if (i > 0)
                 calculations[i].second = calculations[i].second + calculations[i - 1].second;
-            cout << " #" << i << " " << calculations[i].second << endl;
+            cout << " #" << i << " " << calculations[i].second << endl; //debug
         }
-        int choseCity = getClosest(calculations);
+        //wybranie miasta najbliżej losowej wartośći z przedziału (0,1)
+        choseCity = getClosest(calculations);
         cout << "Choosen city:  " << choseCity << endl;
         addCityToAnt(choseCity, ant);
+        if (choseCity == _finish_city)
+            break;
     }
 }
 
