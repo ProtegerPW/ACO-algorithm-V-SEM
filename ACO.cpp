@@ -68,7 +68,7 @@ void AntsColony::fillMatrices(const char *file_name)
     }
     dataFile.close();
     displayMatrices();
-    chooseNextCity(1);
+    chooseNextNode(1);
     cout << "End for ant #1" << endl;
 }
 
@@ -161,25 +161,25 @@ bool AntsColony::isVisited(int city, int ant)
         return false;
 }
 
-void AntsColony::chooseNextCity(int ant)
+void AntsColony::chooseNextNode(int ant)
 {
-    _ant_paths[ant].push_back(_start_city); // add start city at the begging of vector
+    _ant_paths[ant].push_back(_start_node); // add start city at the begging of vector
 
-    // for (int j = 0; j < _num_of_cities; j++)
-    int activeCity = 0, choseCity = _start_city;
+    // for (int j = 0; j < _num_of_nodes; j++)
+    int activeNode = 0, chosenNode = _start_node;
 
-    while (_ant_paths[ant].back() != _finish_city)
+    while (_ant_paths[ant].back() != _finish_node)
     {
-        activeCity = choseCity;
+        activeNode = chosenNode;
 
-        cout << "active City: " << activeCity << endl;
+        cout << "active City: " << activeNode << endl;
 
         //stała do wyliczenia miast w macierzy grafu
-        int multiplier = activeCity * _num_of_cities;
+        int multiplier = activeNode * _num_of_nodes;
         vector<pair<int, double>> calculations;
 
         //szukamy połaczeń z miasta w którym się znajduje mrówka
-        for (list<int>::iterator it = _nodes[activeCity].begin(); it != _nodes[activeCity].end(); ++it)
+        for (list<int>::iterator it = _connections[activeNode].begin(); it != _connections[activeNode].end(); ++it)
         {
             cout << "Cout city " << *it << endl; //debug
             if (isVisited((*it), ant))
@@ -204,15 +204,15 @@ void AntsColony::chooseNextCity(int ant)
             cout << " #" << i << " " << calculations[i].second << endl; //debug
         }
         //wybranie miasta najbliżej losowej wartośći z przedziału (0,1)
-        choseCity = getClosest(calculations);
-        cout << "Choosen city:  " << choseCity << endl;
-        addCityToAnt(choseCity, ant);
-        if (choseCity == _finish_city)
+        chosenNode = getClosest(calculations);
+        cout << "Choosen city:  " << chosenNode << endl;
+        addNodeToAnt(chosenNode, ant);
+        if (chosenNode == _finish_node)
             break;
     }
 }
 
-void AntsColony::addCityToAnt(int city, int ant)
+void AntsColony::addNodeToAnt(int city, int ant)
 {
     _ant_paths[ant].push_back(city);
 
@@ -246,8 +246,6 @@ void AntsColony::bestRoute()
         }
     }
 }
-
-#endif
 
 //TODO #1 dodać fun aktualizującą poziom feronomu na ścieżce
 //TODO #2 dodać fun liczącą długość ścieżki i porównującą ją z obecnym rekordem
