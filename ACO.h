@@ -27,12 +27,14 @@ public:
     }
 
     void readData(const char *file_name);
-    void initVectors();
-    void fillVectors(const char *file_name);
+    void initMatrices();
+    void fillMatrices(const char *file_name);
     void addNode(int start, int stop);
     void displayMatrices();
     void bestRoute();
-    void sth(int start);
+    void chooseNextCity(int start, int ant);
+    void addCityToAnt(int start, int path, int ant);
+    bool isVisited(int city, int ant);
 
 private:
     //----VARIABLES-- ----
@@ -48,8 +50,8 @@ private:
     double *_visibility, *_pheromone; // visibility - macierz odwrotna do graph
                                       // pheromone - macierz rozkladu feromonow
 
-    list<vector<int>> _ant_paths; // lista sciezek obranych przez mrowki
-    vector<int> _best_path;       // struktura pomocnicza przechowujaca najlepsza sciezke
+    vector<vector<int>> _ant_paths; // lista sciezek obranych przez mrowki
+    vector<int> _best_path;         // struktura pomocnicza przechowujaca najlepsza sciezke
 };
 
 #endif

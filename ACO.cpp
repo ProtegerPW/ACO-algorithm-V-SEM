@@ -19,58 +19,68 @@ void AntsColony::readData(const char *file_name)
             num_of_cities = b;
     }
     dataFile.close();
-    _num_of_cities = num_of_cities;
+    _num_of_cities = num_of_cities + 1;
 
-    initVectors();
-    fillVectors(file_name);
+    initMatrices();
+    fillMatrices(file_name);
 }
 
-void AntsColony::initVectors()
+void AntsColony::initMatrices()
 {
     int pow_num_of_cities = pow(_num_of_cities, 2);
     _graph = new int[pow_num_of_cities]();
     _visibility = new double[pow_num_of_cities]();
     _pheromone = new double[pow_num_of_cities]();
-    for (int i = 0; i < pow(_num_of_cities, 2); i++)
+    for (int i = 0; i < pow_num_of_cities; i++)
     {
         _pheromone[i] = 1.0;
     }
-    //TODO init _pheromone table?
+
     for (int i = 0; i < _num_of_cities; i++)
     {
         list<int> temp;
         _nodes.push_back(temp);
     }
+
+    for (int i = 0; i < sANTS + 1; i++)
+    {
+        vector<int> temp;
+        _ant_paths.push_back(temp);
+    }
 }
 
-void AntsColony::fillVectors(const char *file_name)
+void AntsColony::fillMatrices(const char *file_name)
 {
     ifstream dataFile;
     dataFile.open(file_name);
     int a, b, c;
     while (dataFile >> a >> b >> c)
     {
-        _graph[(a - 1) * _num_of_cities + (b - 1)] = _graph[(b - 1) * _num_of_cities + (a - 1)] = c;
-        _visibility[(a - 1) * _num_of_cities + (b - 1)] = _visibility[(b - 1) * _num_of_cities + (a - 1)] = pow((1 / static_cast<double>(c)), sBETA);
+        _graph[a * _num_of_cities + b] = _graph[b * _num_of_cities + a] = c;
+        _visibility[a * _num_of_cities + b] = _visibility[b * _num_of_cities + a] = pow((1 / static_cast<double>(c)), sBETA);
         addNode(a, b);
     }
     dataFile.close();
     displayMatrices();
-    sth(_start_city);
+    chooseNextCity(_start_city, 1);
 }
 
 void AntsColony::addNode(int start, int stop)
 {
-    _nodes[start - 1].insert(_nodes[start - 1].end(), stop);
-    _nodes[stop - 1].insert(_nodes[stop - 1].end(), start);
+    _nodes[start].insert(_nodes[start].end(), stop);
+    _nodes[stop].insert(_nodes[stop].end(), start);
 }
 
 void AntsColony::displayMatrices()
 {
     for (int i = 0; i < _num_of_cities; i++)
     {
+        if (i == 0)
+            continue;
         for (int j = 0; j < _num_of_cities; j++)
         {
+            if (j == 0)
+                continue;
             cout << _graph[i * _num_of_cities + j] << " ";
         }
         cout << endl;
@@ -80,8 +90,12 @@ void AntsColony::displayMatrices()
 
     for (int i = 0; i < _num_of_cities; i++)
     {
+        if (i == 0)
+            continue;
         for (int j = 0; j < _num_of_cities; j++)
         {
+            if (j == 0)
+                continue;
             cout << _visibility[i * _num_of_cities + j] << " ";
         }
         cout << endl;
@@ -89,6 +103,8 @@ void AntsColony::displayMatrices()
 
     for (int i = 0; i < _num_of_cities; i++)
     {
+        if (i == 0)
+            continue;
         for (list<int>::iterator it = _nodes[i].begin(); it != _nodes[i].end(); ++it)
         {
             cout << (*it) << " ";
@@ -137,37 +153,80 @@ double getClosest(vector<double> input)
     return input[mid];
 }
 
-void AntsColony::sth(int start)
+bool AntsColony::isVisited(int city, int ant)
 {
+    if (find(_ant_paths[ant].begin(), _ant_paths[ant].end(), city) != _ant_paths[ant].end())
+        return true;
+    else
+        return false;
+}
 
-    vector<double> calculations;
-    int multiplier = (start - 1) * _num_of_cities;
+void AntsColony::chooseNextCity(int start, int ant)
+{
+    _ant_paths[ant].push_back(start); // add start city
 
-    for (list<int>::iterator it = _nodes[start - 1].begin(); it != _nodes[start - 1].end(); ++it)
+    for (int j = 0; j < _num_of_cities; j++)
     {
-        calculations.push_back(pow(_pheromone[multiplier + ((*it) - 1)], sALPHA) * _visibility[multiplier + ((*it) - 1)]);
-    }
-    double sum = accumulate(calculations.begin(), calculations.end(), 0.0);
+        int activeCity = (start + j) % _num_of_cities;
+        cout << "active City: " << activeCity << endl;
 
-    //debbuging -------------------------------------------
+        //pomijamy miasto zerowe
+        if (activeCity == 0)
+            continue;
+
+        //pomijamy miasto, jeżeli mrówka już przez nie przeszła
+        if (j != 0 && isVisited(activeCity, ant))
+            continue;
+
+        int multiplier = activeCity * _num_of_cities;
+        vector<double> calculations;
+
+        for (list<int>::iterator it = _nodes[activeCity].begin(); it != _nodes[activeCity].end(); ++it)
+        {
+            cout << "Cout city " << *it << endl;
+            if (isVisited((*it), ant))
+                continue;
+
+            calculations.push_back(pow(_pheromone[multiplier + (*it)], sALPHA) * _visibility[multiplier + (*it)]);
+        }
+        double sum = accumulate(calculations.begin(), calculations.end(), 0.0);
+
+        //debbuging -------------------------------------------
+        cout << "Probability: " << endl;
+        for (double temp : calculations)
+        {
+            cout << temp << endl;
+        }
+        cout << endl;
+        cout << "Calculations size: " << calculations.size() << endl;
+        //----------------------------------------------------
+
+        for (int i = 0; i < calculations.size(); i++)
+        {
+            calculations[i] = (calculations[i] / sum);
+            if (i > 0)
+                calculations[i] = calculations[i] + calculations[i - 1];
+            cout << " #" << i << " " << calculations[i] << endl;
+        }
+        vector<double>::iterator it = find(calculations.begin(), calculations.end(), getClosest(calculations));
+        cout << "Choosen path " << it - calculations.begin() << endl;
+        addCityToAnt(start, it - calculations.begin(), ant);
+    }
+}
+
+void AntsColony::addCityToAnt(int start, int path, int ant)
+{
+    list<int>::iterator it = _nodes[start].begin();
+    advance(it, path);
+    _ant_paths[ant].push_back(*it);
+
+    cout << "Ant #" << ant << " goes through ";
+
+    for (int temp : _ant_paths[ant])
+    {
+        cout << temp << " ";
+    }
     cout << endl;
-    for (double temp : calculations)
-    {
-        cout << temp << endl;
-    }
-    cout << endl;
-    cout << calculations.size() << endl;
-    //----------------------------------------------------
-
-    for (int i = 0; i < calculations.size(); i++)
-    {
-        calculations[i] = (calculations[i] / sum);
-        if (i > 0)
-            calculations[i] = calculations[i] + calculations[i - 1];
-        cout << calculations[i] << endl;
-    }
-    auto it = find(calculations.begin(), calculations.end(), getClosest(calculations));
-    cout << "Choosen path " << it - calculations.begin() << endl;
 }
 
 void AntsColony::bestRoute()
