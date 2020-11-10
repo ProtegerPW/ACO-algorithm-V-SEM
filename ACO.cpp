@@ -1,49 +1,94 @@
 #include "ACO.h"
 
-AntsColony::~AntsColony() {
+void Ant::resetAnt() {
+    cout << "Resetting ant" << endl;
+    _path_taken.clear();
+    _distance_covered = 0;
+    _is_stuck = false;
+}
+
+void Ant::exploreGraph(int id_start_node, int id_end_node) {
+    int matrix_index, id_curr_node, id_chosen_node;
+    double likelihood, sum; 
+
+    list<int>::iterator neighbour;
+
+    // TODO co jesli wierzcholek poczatkowy nie ma polaczen w ogole? 
+    
+    id_curr_node = id_start_node;
+    
+    while( id_curr_node != id_end_node && _is_stuck == false ) {
+        if( _ptr_colony->_connections[id_curr_node].size() == 1 )
+            _is_stuck = true;
+        else {
+            matrix_index = id_curr_node * _ptr_colony->_num_of_nodes;
+            sum = 0.0;
+                // ant analizes neighbours
+            neighbour = _ptr_colony->_connections[id_curr_node].begin();
+            while( neighbour != _ptr_colony->_connections[id_curr_node].end() ) {
+                if( isVisited( *neighbour ) == false ) {
+                    likelihood = pow(_ptr_colony->_pheromone[matrix_index + *neighbour], sALPHA);
+                    likelihood *= _ptr_colony->_visibility[matrix_index + *neighbour];
+                    sum += likelihood;
+                    _path_options.push_back( make_pair( *neighbour, likelihood ) );
+                }
+                ++neighbour;
+            }
+            for( unsigned int i = 0; i < _path_options.size(); ++i ) {
+                _path_options[i].second /= sum;
+            }
+                // ant chooses a node
+            id_chosen_node = chooseOption();
+                // ant goes to that node
+            _path_taken.push_back( id_chosen_node );
+
+            id_curr_node = id_chosen_node;
+        }
+    }
+    // if( is_stuck == true )
+        // heuristic
+}
+
+bool Ant::isVisited(int id_node) {
+    return (find(_path_taken.begin(), _path_taken.end(), id_node) != _path_taken.end())? true: false;
+}
+
+int Ant::chooseOption() {
+    double random = getRandom();
+
+}
+
+double getRandom() {
+    static random_device rd;
+    static mt19937 e2(rd());
+    static uniform_real_distribution<> dist(0, 1);
+    return dist(e2);
+}
+
+// // //
+
+AntColony::~AntColony() {
     delete _graph;
     delete _visibility;
     delete _pheromone;
+    for( auto &ant: _ants )
+        delete ant;
 }
 
-void AntsColony::findOptimisedRoute(int id_start_node, int id_end_node, int num_iterations) {
+void AntColony::findOptimisedRoute(int id_start_node, int id_end_node, int num_iterations) {
     for(int i = 0; i < num_iterations; ++i) {
-        setupAnts();
-        // for(int id_ant = 0; id_ant < NUM_OF_ANTS; ++id_ant)
-        //     antExploresGraph(id_ant, id_start_node, id_end_node);
-        // for( auto &ant: _ants )
-        //     ant.exploreGraph( id_start_node, id_end_node );
+        for( Ant *ant: _ants ) {
+            ant->resetAnt();
+        }
+        for( Ant *ant: _ants ) {
+            ant->exploreGraph( id_start_node, id_end_node );
+        }
         // updatePheromoneMatrix()
         // pheromoneEvaporation()
     }
 }
 
-void AntsColony::setupAnts() {
-    cout << "Entering setup." << endl;
-    for( auto &ant: _ants )
-        ant.resetAnt();
-}
-
-void AntsColony::antExploresGraph(int id_ant, int id_start_node, int id_end_node) {
-    int id_curr_node = id_start_node;
-    bool is_stuck = false;
-
-    cout << "Ant #" << id_ant << " begins exploration." << endl;
-
-    while( id_curr_node != id_end_node && is_stuck == false ) {
-        if( _connections[id_curr_node].size() == 0 )
-            is_stuck = true;
-        // else 
-            // ant analizes options
-            // ant chooses a node
-            // ant goes to that node
-    }
-    // if( is_stuck == true )
-        // heuristic
-    
-}
-
-void AntsColony::scanData(const char *file_name)
+void AntColony::scanData(const char *file_name)
 {
     ifstream dataFile;
     dataFile.open(file_name);
@@ -60,7 +105,7 @@ void AntsColony::scanData(const char *file_name)
     _num_of_nodes = ++max_id;
 }
 
-void AntsColony::initMatrices()
+void AntColony::initMatrices()
 {
     int pow_num_of_nodes = pow(_num_of_nodes, 2);
 
@@ -78,9 +123,13 @@ void AntsColony::initMatrices()
         list<int> temp;
         _connections.push_back(temp);
     }
+
+    for( int i = 0; i < NUM_OF_ANTS; ++i) {
+        _ants.push_back(new Ant(this));
+    }
 }
 
-void AntsColony::fillMatrices(const char *file_name)
+void AntColony::fillMatrices(const char *file_name)
 {
     ifstream dataFile;
     dataFile.open(file_name);
@@ -101,13 +150,13 @@ void AntsColony::fillMatrices(const char *file_name)
     displayMatrices();
 }
 
-void AntsColony::addEdge(int id_node1, int id_node2)
+void AntColony::addEdge(int id_node1, int id_node2)
 {
     _connections[id_node1].push_back(id_node2);
     _connections[id_node2].push_back(id_node1);
 }
 
-void AntsColony::displayMatrices()
+void AntColony::displayMatrices()
 {
     for (int i = 1; i < _num_of_nodes; i++)
     {
@@ -140,7 +189,7 @@ void AntsColony::displayMatrices()
 }
 
     // TODO implement <0,1) distribution from <random>
-double AntsColony::randGen()
+double AntColony::randGen()
 {
     srand(time(NULL));
     double temp = (double)rand() / RAND_MAX;
@@ -182,7 +231,7 @@ int getClosest(vector<pair<int, double>> input)
     return input[mid].first;
 }
 
-bool AntsColony::isVisited(int city, int ant)
+bool AntColony::isVisited(int city, int ant)
 {
     if (find(_ant_paths[ant].begin(), _ant_paths[ant].end(), city) != _ant_paths[ant].end())
         return true;
@@ -190,7 +239,7 @@ bool AntsColony::isVisited(int city, int ant)
         return false;
 }
 
-void AntsColony::chooseNextNode(int ant)
+void AntColony::chooseNextNode(int ant)
 {
     _ant_paths[ant].push_back(_start_node); // add start city at the begging of vector
 
@@ -241,7 +290,7 @@ void AntsColony::chooseNextNode(int ant)
     }
 }
 
-void AntsColony::addNodeToAnt(int city, int ant)
+void AntColony::addNodeToAnt(int city, int ant)
 {
     _ant_paths[ant].push_back(city);
 
@@ -254,7 +303,7 @@ void AntsColony::addNodeToAnt(int city, int ant)
     cout << endl;
 }
 
-void AntsColony::bestRoute()
+void AntColony::bestRoute()
 {
     for (int i = 1; i <= sITER; i++)
     {

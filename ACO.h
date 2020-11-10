@@ -9,6 +9,7 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <random>
 
 using namespace std;
 
@@ -19,29 +20,35 @@ using namespace std;
 #define sRHO 0.5 //RHO - evaporation coefficient
 #define sITER 5
 
+class AntColony;
+
 class Ant {
-public:
-    Ant() { };
-    ~Ant();
-    
-    void resetAnt();
-    void exploreGraph(int id_start_node, int id_end_node);
+    public:
+        Ant( AntColony *ptr_colony ): _ptr_colony( ptr_colony ) { };
 
-private:
-    vector<int> _path_taken;
-    int _distance_covered;
-    bool _is_stuck;
-};
+        void resetAnt();
+        void exploreGraph(int id_start_node, int id_end_node);
+    private:
+        bool isVisited(int id_node);
+        int chooseOption();
 
-using Connections = vector<list<int>>;
+        AntColony *_ptr_colony;
 
-class AntsColony
+        vector<pair<int, double>> _path_options;
+
+        vector<int> _path_taken;
+        int _distance_covered;
+        bool _is_stuck;
+    };
+
+double getRandom();
+
+class AntColony
 {
-public:
     friend class Ant;
-
-    AntsColony() {};
-    ~AntsColony();
+public:
+    AntColony() {};
+    ~AntColony();
 
     void findOptimisedRoute(int id_start_node, int id_end_node, int num_iterations);
 
@@ -59,9 +66,6 @@ public:
 private:
     void addEdge(int id_node1, int id_node2);
 
-    void setupAnts();
-    void antExploresGraph(int id_ant, int id_start_node, int id_end_node);
-
     double randGen();
 
     const int NUM_OF_ANTS = sANTS;
@@ -69,13 +73,14 @@ private:
 
     int _num_of_nodes;
 
+    using Connections = vector<list<int>>;
     Connections _connections;   // wierzcholki + lista sciezek od wierzcholka
 
     int *_graph;                      // macierz odleglosci pomiedzy miastami
     double *_visibility, *_pheromone; // visibility - macierz odwrotna do graph
                                       // pheromone - macierz rozkladu feromonow
 
-    list<Ant> _ants;
+    list<Ant*> _ants;
 
     vector<int> _best_path;           // struktura pomocnicza przechowujaca najlepsza sciezke
 };
