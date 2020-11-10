@@ -19,11 +19,31 @@ using namespace std;
 #define sRHO 0.5 //RHO - evaporation coefficient
 #define sITER 5
 
+class Ant {
+public:
+    Ant() { };
+    ~Ant();
+    
+    void resetAnt();
+    void exploreGraph(int id_start_node, int id_end_node);
+
+private:
+    vector<int> _path_taken;
+    int _distance_covered;
+    bool _is_stuck;
+};
+
+using Connections = vector<list<int>>;
+
 class AntsColony
 {
 public:
-    AntsColony(int start_node, int finish_node): _start_node(start_node), _finish_node(finish_node) { }
+    friend class Ant;
+
+    AntsColony() {};
     ~AntsColony();
+
+    void findOptimisedRoute(int id_start_node, int id_end_node, int num_iterations);
 
     void scanData(const char *file_name);
     void initMatrices();
@@ -39,19 +59,24 @@ public:
 private:
     void addEdge(int id_node1, int id_node2);
 
+    void setupAnts();
+    void antExploresGraph(int id_ant, int id_start_node, int id_end_node);
+
+    double randGen();
 
     const int NUM_OF_ANTS = sANTS;
     const double ALPHA = sALPHA, BETA = sBETA, RHO = sRHO;
 
-    int _num_of_nodes, _start_node, _finish_node;
+    int _num_of_nodes;
 
-    vector<list<int>> _connections;   // wierzcholki + lista sciezek od wierzcholka
+    Connections _connections;   // wierzcholki + lista sciezek od wierzcholka
 
     int *_graph;                      // macierz odleglosci pomiedzy miastami
     double *_visibility, *_pheromone; // visibility - macierz odwrotna do graph
                                       // pheromone - macierz rozkladu feromonow
 
-    vector<vector<int>> _ant_paths;   // lista sciezek obranych przez mrowki
+    list<Ant> _ants;
+
     vector<int> _best_path;           // struktura pomocnicza przechowujaca najlepsza sciezke
 };
 

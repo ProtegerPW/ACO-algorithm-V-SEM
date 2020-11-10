@@ -6,6 +6,43 @@ AntsColony::~AntsColony() {
     delete _pheromone;
 }
 
+void AntsColony::findOptimisedRoute(int id_start_node, int id_end_node, int num_iterations) {
+    for(int i = 0; i < num_iterations; ++i) {
+        setupAnts();
+        // for(int id_ant = 0; id_ant < NUM_OF_ANTS; ++id_ant)
+        //     antExploresGraph(id_ant, id_start_node, id_end_node);
+        // for( auto &ant: _ants )
+        //     ant.exploreGraph( id_start_node, id_end_node );
+        // updatePheromoneMatrix()
+        // pheromoneEvaporation()
+    }
+}
+
+void AntsColony::setupAnts() {
+    cout << "Entering setup." << endl;
+    for( auto &ant: _ants )
+        ant.resetAnt();
+}
+
+void AntsColony::antExploresGraph(int id_ant, int id_start_node, int id_end_node) {
+    int id_curr_node = id_start_node;
+    bool is_stuck = false;
+
+    cout << "Ant #" << id_ant << " begins exploration." << endl;
+
+    while( id_curr_node != id_end_node && is_stuck == false ) {
+        if( _connections[id_curr_node].size() == 0 )
+            is_stuck = true;
+        // else 
+            // ant analizes options
+            // ant chooses a node
+            // ant goes to that node
+    }
+    // if( is_stuck == true )
+        // heuristic
+    
+}
+
 void AntsColony::scanData(const char *file_name)
 {
     ifstream dataFile;
@@ -41,12 +78,6 @@ void AntsColony::initMatrices()
         list<int> temp;
         _connections.push_back(temp);
     }
-
-    for (int i = 0; i < NUM_OF_ANTS + 1; i++)       // ?
-    {
-        vector<int> temp;
-        _ant_paths.push_back(temp);
-    }
 }
 
 void AntsColony::fillMatrices(const char *file_name)
@@ -68,8 +99,6 @@ void AntsColony::fillMatrices(const char *file_name)
     }
     dataFile.close();
     displayMatrices();
-    chooseNextNode(1);
-    cout << "End for ant #1" << endl;
 }
 
 void AntsColony::addEdge(int id_node1, int id_node2)
@@ -111,15 +140,15 @@ void AntsColony::displayMatrices()
 }
 
     // TODO implement <0,1) distribution from <random>
-double randGen()
+double AntsColony::randGen()
 {
     srand(time(NULL));
     double temp = (double)rand() / RAND_MAX;
-    cout << " Random #" << temp << endl;
+    cout << "Random #" << temp << endl;
     return temp;
 }
 
-int getNearest(pair<int, double> x, pair<int, double> y, double target)
+/*int getNearest(pair<int, double> x, pair<int, double> y, double target)
 {
     if (target - x.second >= y.second - target)
         return y.first;
@@ -246,6 +275,7 @@ void AntsColony::bestRoute()
         }
     }
 }
+*/
 
 //TODO #1 dodać fun aktualizującą poziom feronomu na ścieżce
 //TODO #2 dodać fun liczącą długość ścieżki i porównującą ją z obecnym rekordem

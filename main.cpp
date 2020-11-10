@@ -15,10 +15,10 @@ int main(int argc, char const *argv[])
     int id_start_node = atoi(argv[2]), id_end_node = atoi(argv[3]);
     const char *file_name = argv[1];
 
-    AntsColony ACO(id_start_node, id_end_node);
+    AntsColony ACO;
     ACO.scanData(file_name);
     ACO.initMatrices();
     ACO.fillMatrices(file_name);
-    // ACO.findOptimisedRoute(id_start_node, id_end_node);
+    ACO.findOptimisedRoute(id_start_node, id_end_node, 5);
     return 0;
 }
