@@ -1,14 +1,12 @@
 #include "ACO.h"
 
 void Ant::resetStats() {
-    cout << "resetStats()" << endl;
     _path_taken.clear();
     _distance_covered = 0;
     _is_stuck = false;
 }
 
 void Ant::exploreGraph(int id_start_node, int id_end_node) {
-    cout << "exploreGraph()" << endl;
     int id_curr_node, id_chosen_node, matrix_index;
     
     // TODO co jesli wierzcholek poczatkowy nie ma polaczen w ogole? 
@@ -34,28 +32,27 @@ void Ant::exploreGraph(int id_start_node, int id_end_node) {
     
     if( _is_stuck == true )
         cout << "--- Ant got stuck." << endl;
-        // TODO heurystyka
-    else 
-        cout << "--- Ant found a way." << endl;
+    else {
+        cout << "--- Ant found a way: ";
+        for( int i: _path_taken )
+            cout << i << " ";
+        cout << endl << "\tPath length: " << _distance_covered << endl;
+    }
 }
 
 void Ant::analyzeOptions( int id_curr_node ) {
-    cout << "analyzeOptions()" << endl;
     int matrix_index = id_curr_node * _ptr_colony->_num_of_nodes;
     double likelihood, sum = 0.0;
 
-    list<int>::iterator neighbour = _ptr_colony->_connections[id_curr_node].begin();
-    
-    // TODO - jezeli sasiad jest celem koncowym -> wybierz opcje
-    
-    while( neighbour != _ptr_colony->_connections[id_curr_node].end() ) {
+    for( list<int>::iterator neighbour = _ptr_colony->_connections[id_curr_node].begin();
+         neighbour != _ptr_colony->_connections[id_curr_node].end(); ++neighbour ) 
+    {
         if( isVisited( *neighbour ) == false ) {
             likelihood = pow(_ptr_colony->_pheromone[matrix_index + *neighbour], sALPHA);
             likelihood *= _ptr_colony->_visibility[matrix_index + *neighbour];
             sum += likelihood;
             _path_options.push_back( make_pair( *neighbour, sum ) );
         }
-        ++neighbour;
     }
     //
     if( _path_options.size() == 0 ) {
@@ -70,12 +67,10 @@ void Ant::analyzeOptions( int id_curr_node ) {
 }
 
 bool Ant::isVisited( int id_node ) {
-    cout << "isVisited()" << endl;
     return find(_path_taken.begin(), _path_taken.end(), id_node) != _path_taken.end()? true: false;
 }
 
 int Ant::chooseOption() {
-    cout << "chooseOption()" << endl;
     double random = getRandom();
     cout << "random = " << random << endl;
     for( unsigned int i = 0; i < _path_options.size() - 1; ++i ) {
@@ -85,8 +80,8 @@ int Ant::chooseOption() {
     return _path_options.back().first;
 }
 
+    // TODO zrobic z tego singleton?
 double getRandom() {
-    cout << "getRandom()" << endl;
     static random_device rd;
     static mt19937 e2(rd());
     static uniform_real_distribution<> dist(0, 1);
@@ -109,13 +104,70 @@ void AntColony::findOptimisedRoute(int id_start_node, int id_end_node, int num_i
             cout << "--- Ant begins its journey ---" << endl;
             ant->exploreGraph( id_start_node, id_end_node );
         }
-        // TODO updatePheromoneMatrix()
-        // TODO pheromoneEvaporation()
-        
+        pheromoneEvaporation();
+        updatePheromone();
         for( Ant *ant: _ants ) {
+            if( ant->_distance_covered < _shortest_path ) {
+                _best_path.clear();
+                copy( ant->_path_taken.begin(), ant->_path_taken.end(), back_inserter( _best_path ) );
+                _shortest_path = ant->_distance_covered;
+            }
+            //
             ant->resetStats();
         }
     }
+}
+
+void AntColony::updatePheromone() {
+    cout << "updatePheromone()" << endl;
+    double delta_pheromone;
+    int row, column, matrix_index, distance;
+
+    for( Ant *ant: _ants ) {
+        if( ant->_is_stuck == true ) {
+                // heurystyka
+            // row = ant->_path_taken.end()[-2];
+            // column = ant->_path_taken.end()[-1];
+            // matrix_index = row * _num_of_nodes + column;
+            
+            // _pheromone[matrix_index] = 0.0
+            ;
+        }
+        else {
+            delta_pheromone = 1.0/(ant->_distance_covered);
+
+            for( unsigned int i = 0; i < ant->_path_taken.size(); ++i ) {
+                row = ant->_path_taken[i];
+                column = ant->_path_taken[i + 1];
+                matrix_index = row * _num_of_nodes + column;
+                
+                distance = _graph[matrix_index];
+                
+                _pheromone[matrix_index] += distance * delta_pheromone;
+            }
+        }
+    }
+}
+
+void AntColony::pheromoneEvaporation() {
+    cout << "pheromoneEvaporation()" << endl;
+    int matrix_index;
+    double evaporation_coefficient = 1 - RHO;
+    list<int>::iterator node_to;
+    for( int node_from = 1; node_from < _num_of_nodes; ++node_from ) {
+        for( node_to = _connections[node_from].begin(); node_to != _connections[node_from].end(); ++ node_to ) {
+            matrix_index = node_from * _num_of_nodes + *node_to;
+            _pheromone[matrix_index] *= evaporation_coefficient;
+        }
+    }
+}
+
+void AntColony::displayResults() {
+    cout << endl << "---------------------------------------" << endl
+         << "Optimised path: ";
+    for( int i: _best_path )
+        cout << i << " ";
+    cout << endl << "Path length: " << _shortest_path << endl; 
 }
 
 void AntColony::scanData(const char *file_name)
@@ -177,7 +229,6 @@ void AntColony::fillMatrices(const char *file_name)
         addEdge(id_node1, id_node2);
     }
     dataFile.close();
-    displayMatrices();
 }
 
 void AntColony::addEdge(int id_node1, int id_node2)
@@ -218,6 +269,4 @@ void AntColony::displayMatrices()
     }
 }
 
-//TODO #1 dodać fun aktualizującą poziom feronomu na ścieżce
-//TODO #2 dodać fun liczącą długość ścieżki i porównującą ją z obecnym rekordem
-//TODO #3 testy
+//TODO testy

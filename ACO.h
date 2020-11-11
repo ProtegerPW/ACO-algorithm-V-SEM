@@ -18,11 +18,12 @@ using namespace std;
 #define sALPHA 1 //ALPHA - weight of pheromone,
 #define sBETA 2  //BETA - weight of visibility
 #define sRHO 0.5 //RHO - evaporation coefficient
-#define sITER 2
+#define sITER 10
 
 class AntColony;
 
 class Ant {
+    friend class AntColony;
 public:
     Ant( AntColony *ptr_colony ): _ptr_colony( ptr_colony ), _distance_covered( 0 ), _is_stuck( false ) { };
 
@@ -48,10 +49,11 @@ class AntColony
 {
     friend class Ant;
 public:
-    AntColony() {};
+    AntColony(): _shortest_path( INT32_MAX ) {};
     ~AntColony();
 
     void findOptimisedRoute(int id_start_node, int id_end_node, int num_iterations);
+    void displayResults();
 
     void scanData(const char *file_name);
     void initMatrices();
@@ -61,6 +63,8 @@ public:
 
 private:
     void addEdge(int id_node1, int id_node2);
+    void updatePheromone();
+    void pheromoneEvaporation();
 
     const int NUM_OF_ANTS = sANTS;
     const double ALPHA = sALPHA, BETA = sBETA, RHO = sRHO;
@@ -77,6 +81,7 @@ private:
     list<Ant*> _ants;
 
     vector<int> _best_path;           // struktura pomocnicza przechowujaca najlepsza sciezke
+    int _shortest_path;
 };
 
 #endif

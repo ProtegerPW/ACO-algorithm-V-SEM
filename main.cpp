@@ -20,4 +20,5 @@ int main(int argc, char const *argv[])
     ACO.initMatrices();
     ACO.fillMatrices(file_name);
     ACO.findOptimisedRoute(id_start_node, id_end_node, sITER);
+    ACO.displayResults();
 }
