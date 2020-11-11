@@ -50,8 +50,10 @@ void Ant::analyzeOptions( int id_curr_node ) {
         if( isVisited( *neighbour ) == false ) {
             likelihood = pow(_ptr_colony->_pheromone[matrix_index + *neighbour], sALPHA);
             likelihood *= _ptr_colony->_visibility[matrix_index + *neighbour];
-            sum += likelihood;
-            _path_options.push_back( make_pair( *neighbour, sum ) );
+            if( likelihood > 0.0 ) {
+                sum += likelihood;
+                _path_options.push_back( make_pair( *neighbour, sum ) );
+            }
         }
     }
     //
@@ -107,7 +109,7 @@ void AntColony::findOptimisedRoute(int id_start_node, int id_end_node, int num_i
         pheromoneEvaporation();
         updatePheromone();
         for( Ant *ant: _ants ) {
-            if( ant->_distance_covered < _shortest_path ) {
+            if( ant->_distance_covered < _shortest_path && ant->_is_stuck == false ) {
                 _best_path.clear();
                 copy( ant->_path_taken.begin(), ant->_path_taken.end(), back_inserter( _best_path ) );
                 _shortest_path = ant->_distance_covered;
@@ -126,11 +128,11 @@ void AntColony::updatePheromone() {
     for( Ant *ant: _ants ) {
         if( ant->_is_stuck == true ) {
                 // heurystyka
-            // row = ant->_path_taken.end()[-2];
-            // column = ant->_path_taken.end()[-1];
-            // matrix_index = row * _num_of_nodes + column;
+            row = ant->_path_taken.end()[-2];
+            column = ant->_path_taken.end()[-1];
+            matrix_index = row * _num_of_nodes + column;
             
-            // _pheromone[matrix_index] = 0.0
+            _pheromone[matrix_index] = 0.0
             ;
         }
         else {

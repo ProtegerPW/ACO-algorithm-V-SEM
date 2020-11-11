@@ -14,11 +14,11 @@
 using namespace std;
 
 // TODO config file
-#define sANTS 3
+#define sANTS 5
 #define sALPHA 1 //ALPHA - weight of pheromone,
 #define sBETA 2  //BETA - weight of visibility
 #define sRHO 0.5 //RHO - evaporation coefficient
-#define sITER 10
+#define sITER 100
 
 class AntColony;
 
@@ -41,7 +41,7 @@ private:
     vector<int> _path_taken;
     int _distance_covered;
     bool _is_stuck;
-    };
+};
 
 double getRandom();
 

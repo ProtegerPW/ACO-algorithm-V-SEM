@@ -1,4 +1,4 @@
 GitACO/
 *.out
 ACO.h.gch
-'.vscode/settings.json'
+.vscode/
