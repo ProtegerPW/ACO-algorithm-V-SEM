@@ -19,5 +19,5 @@ int main(int argc, char const *argv[])
     ACO.scanData(file_name);
     ACO.initMatrices();
     ACO.fillMatrices(file_name);
-    ACO.findOptimisedRoute(id_start_node, id_end_node, 5);
+    ACO.findOptimisedRoute(id_start_node, id_end_node, sITER);
 }

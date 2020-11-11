@@ -14,31 +14,32 @@
 using namespace std;
 
 // TODO config file
-#define sANTS 5
+#define sANTS 3
 #define sALPHA 1 //ALPHA - weight of pheromone,
 #define sBETA 2  //BETA - weight of visibility
 #define sRHO 0.5 //RHO - evaporation coefficient
-#define sITER 5
+#define sITER 2
 
 class AntColony;
 
 class Ant {
-    public:
-        Ant( AntColony *ptr_colony ): _ptr_colony( ptr_colony ) { };
+public:
+    Ant( AntColony *ptr_colony ): _ptr_colony( ptr_colony ), _distance_covered( 0 ), _is_stuck( false ) { };
 
-        void resetAnt();
-        void exploreGraph(int id_start_node, int id_end_node);
-    private:
-        bool isVisited(int id_node);
-        int chooseOption();
+    void exploreGraph(int id_start_node, int id_end_node);
+    void resetStats();
+private:
+    void analyzeOptions( int id_curr_node );
+    bool isVisited(int id_node);
+    int chooseOption();
 
-        AntColony *_ptr_colony;
+    AntColony *_ptr_colony;
 
-        vector<pair<int, double>> _path_options;
+    vector<pair<int, double>> _path_options;
 
-        vector<int> _path_taken;
-        int _distance_covered;
-        bool _is_stuck;
+    vector<int> _path_taken;
+    int _distance_covered;
+    bool _is_stuck;
     };
 
 double getRandom();
@@ -58,15 +59,8 @@ public:
 
     void displayMatrices();
 
-    void bestRoute();
-    void chooseNextNode(int id_ant);
-    void addNodeToAnt(int id_node, int id_ant);
-    bool isVisited(int id_node, int id_ant);
-
 private:
     void addEdge(int id_node1, int id_node2);
-
-    double randGen();
 
     const int NUM_OF_ANTS = sANTS;
     const double ALPHA = sALPHA, BETA = sBETA, RHO = sRHO;
@@ -74,7 +68,7 @@ private:
     int _num_of_nodes;
 
     using Connections = vector<list<int>>;
-    Connections _connections;   // wierzcholki + lista sciezek od wierzcholka
+    Connections _connections;         // wierzcholki + lista sciezek od wierzcholka
 
     int *_graph;                      // macierz odleglosci pomiedzy miastami
     double *_visibility, *_pheromone; // visibility - macierz odwrotna do graph
