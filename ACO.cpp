@@ -169,23 +169,12 @@ void AntColony::updatePheromone()
 
                 //for X to Y city
                 distance = _graph[matrix_index];
-                _pheromone[matrix_index] += distance * delta_pheromone;
+                _pheromone[matrix_index] += delta_pheromone;
 
                 //for Y to X city - same value but different index
                 matrix_index = column * _num_of_nodes + row;
-                _pheromone[matrix_index] += distance * delta_pheromone;
+                _pheromone[matrix_index] += delta_pheromone;
             }
-
-            //debug
-            // for (int i = 1; i < _num_of_nodes; i++)
-            // {
-            //     for (int j = 1; j < _num_of_nodes; j++)
-            //     {
-            //         cout << _pheromone[i * _num_of_nodes + j] << " ";
-            //     }
-            //     cout << endl;
-            // }
-            // cout << endl;
         }
     }
 }
@@ -318,3 +307,5 @@ void AntColony::displayMatrices()
 }
 
 //TODO testy
+//TODO implement nested classes
+//TODO implement constexpr
