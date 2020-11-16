@@ -20,11 +20,11 @@ int AntColony::Ant::getPathTakenValue( int index ) const {
     return path_taken_[index];
 }
 
-vector<int>::const_iterator AntColony::Ant::getPathTakenBegin() const {
+vector<int>::const_iterator AntColony::Ant::getPathTakenIterBegin() const {
     return path_taken_.begin();
 }
 
-vector<int>::const_iterator AntColony::Ant::getPathTakenEnd() const {
+vector<int>::const_iterator AntColony::Ant::getPathTakenIterEnd() const {
     return path_taken_.end();
 }
 
@@ -47,13 +47,13 @@ void AntColony::Ant::exploreGraph(int id_start_node, int id_end_node)
 
     while (id_curr_node != id_end_node)
     {
-        analyzeOptions(id_curr_node); // ant analyzes available route options
-        if (stuck_ == true)        // if ant has no way to go
+        analyzeOptions(id_curr_node);    // ant analyzes available route options
+        if (stuck_ == true)     // if ant has no way to go
             break;
         id_chosen_node = chooseOption(); // ant chooses a node to go to
                                          // update ant's statistics
         path_taken_.push_back(id_chosen_node);
-        matrix_index = id_curr_node * ptr_colony_->num_of_nodes_ + id_chosen_node;
+        matrix_index = id_curr_node * ptr_colony_->num_nodes_ + id_chosen_node;
         distance_covered_ += ptr_colony_->graph_[matrix_index];
         cout << ">> Chosen node: " << id_chosen_node << endl;
 
@@ -76,7 +76,7 @@ void AntColony::Ant::exploreGraph(int id_start_node, int id_end_node)
 
 void AntColony::Ant::analyzeOptions(int id_curr_node)
 {
-    int matrix_index = id_curr_node * ptr_colony_->num_of_nodes_;
+    int matrix_index = id_curr_node * ptr_colony_->num_nodes_;
     double likelihood, sum = 0.0;
 
     for (list<int>::iterator neighbour = ptr_colony_->connections_[id_curr_node].begin();
@@ -133,7 +133,7 @@ double getRandom()
     return dist(e2);
 }
 
-// // //
+// // // // //
 
 AntColony::~AntColony()
 {
@@ -160,7 +160,7 @@ void AntColony::findOptimisedRoute(int id_start_node, int id_end_node, int num_i
             if (ant->getDistance() < shortest_path_ && ant->isStuck() == false)
             {
                 best_path_.clear();
-                copy(ant->getPathTakenBegin(), ant->getPathTakenEnd(), back_inserter(best_path_));  // ??
+                copy(ant->getPathTakenIterBegin(), ant->getPathTakenIterEnd(), back_inserter(best_path_));  // ??
                 shortest_path_ = ant->getDistance();
             }
             //
@@ -180,9 +180,9 @@ void AntColony::updatePheromone()
         if (ant->isStuck() == true)
         {
             // heurystyka
-            row = ant->getPathTakenValue(-2);
-            column = ant->getPathTakenValue(-1);
-            matrix_index = row * num_of_nodes_ + column;
+            row = ant->getPathTakenValue(-2);               // get penultimate node index of path_taken_ vector
+            column = ant->getPathTakenValue(-1);            // get last node index of path_taken_ vector
+            matrix_index = row * num_nodes_ + column;
 
             pheromone_[matrix_index] = 0.0;
         }
@@ -196,11 +196,11 @@ void AntColony::updatePheromone()
                 column = ant->getPathTakenValue(i + 1);
 
                 // from X to Y
-                matrix_index = row * num_of_nodes_ + column;
+                matrix_index = row * num_nodes_ + column;
                 pheromone_[matrix_index] += delta_pheromone;
 
                 // from Y to X - same value, reversed indexes
-                matrix_index = column * num_of_nodes_ + row;
+                matrix_index = column * num_nodes_ + row;
                 pheromone_[matrix_index] += delta_pheromone;
             }
         }
@@ -213,11 +213,11 @@ void AntColony::pheromoneEvaporation()
     int matrix_index;
     double evaporation_coefficient = 1 - RHO;
     list<int>::iterator node_to;
-    for (int node_from = 1; node_from < num_of_nodes_; ++node_from)
+    for (int node_from = 1; node_from < num_nodes_; ++node_from)
     {
         for (node_to = connections_[node_from].begin(); node_to != connections_[node_from].end(); ++node_to)
         {
-            matrix_index = node_from * num_of_nodes_ + *node_to;
+            matrix_index = node_from * num_nodes_ + *node_to;
             pheromone_[matrix_index] *= evaporation_coefficient;
         }
     }
@@ -248,12 +248,12 @@ void AntColony::scanData(const char *file_name)
             max_id = id_node2;
     }
     dataFile.close();
-    num_of_nodes_ = ++max_id;
+    num_nodes_ = ++max_id;
 }
 
 void AntColony::initMatrices()
 {
-    int pow_num_of_nodes = pow(num_of_nodes_, 2);
+    int pow_num_of_nodes = pow(num_nodes_, 2);
 
     graph_ = new int[pow_num_of_nodes]();
     visibility_ = new double[pow_num_of_nodes]();
@@ -264,7 +264,7 @@ void AntColony::initMatrices()
         pheromone_[i] = 1.0;
     }
 
-    for (int i = 0; i < num_of_nodes_ + 1; i++)
+    for (int i = 0; i < num_nodes_ + 1; i++)
     {
         list<int> temp;
         connections_.push_back(temp);
@@ -285,8 +285,8 @@ void AntColony::fillMatrices(const char *file_name)
     int matrix_pos1, matrix_pos2;
     while (dataFile >> id_node1 >> id_node2 >> weight)
     {
-        matrix_pos1 = id_node1 * num_of_nodes_ + id_node2;
-        matrix_pos2 = id_node2 * num_of_nodes_ + id_node1;
+        matrix_pos1 = id_node1 * num_nodes_ + id_node2;
+        matrix_pos2 = id_node2 * num_nodes_ + id_node1;
 
         graph_[matrix_pos1] = graph_[matrix_pos2] = weight;
         visibility_[matrix_pos1] = visibility_[matrix_pos2] = pow((1 / static_cast<double>(weight)), sBETA);
@@ -304,27 +304,27 @@ void AntColony::addEdge(int id_node1, int id_node2)
 
 void AntColony::displayMatrices()
 {
-    for (int i = 1; i < num_of_nodes_; i++)
+    for (int i = 1; i < num_nodes_; i++)
     {
-        for (int j = 1; j < num_of_nodes_; j++)
+        for (int j = 1; j < num_nodes_; j++)
         {
-            cout << graph_[i * num_of_nodes_ + j] << " ";
+            cout << graph_[i * num_nodes_ + j] << " ";
         }
         cout << endl;
     }
 
     cout << endl;
 
-    for (int i = 1; i < num_of_nodes_; i++)
+    for (int i = 1; i < num_nodes_; i++)
     {
-        for (int j = 1; j < num_of_nodes_; j++)
+        for (int j = 1; j < num_nodes_; j++)
         {
-            cout << visibility_[i * num_of_nodes_ + j] << " ";
+            cout << visibility_[i * num_nodes_ + j] << " ";
         }
         cout << endl;
     }
 
-    for (int i = 1; i < num_of_nodes_; i++)
+    for (int i = 1; i < num_nodes_; i++)
     {
         for (list<int>::iterator it = connections_[i].begin(); it != connections_[i].end(); ++it)
         {
