@@ -47,18 +47,18 @@ private:
     const int NUM_OF_ANTS = sANTS;
     const double ALPHA = sALPHA, BETA = sBETA, RHO = sRHO;
 
-    int num_of_nodes_;
+    int num_nodes_;
 
-    using Connections = vector<list<int>>;
-    Connections connections_;         // wierzcholki + lista sciezek od wierzcholka
+    typedef vector<list<int>> Connections;
+    Connections connections_; // TODO opis reprezentacji grafu przez wektor list
 
-    int *graph_;                      // macierz odleglosci pomiedzy miastami
-    double *visibility_, *pheromone_; // visibility - macierz odwrotna do graph
-                                      // pheromone - macierz rozkladu feromonow
+    int *graph_;           // matrix holding weights between nodes
+    double *visibility_;   // matrix used when determining probability of choosing a node by ant
+    double *pheromone_;    // matrix of pheromone distribution
 
     list<Ant *> ants_;
 
-    vector<int> best_path_;           // struktura pomocnicza przechowujaca najlepsza sciezke
+    vector<int> best_path_;   // attributes holding information about current best path found
     int shortest_path_;
 };
 
@@ -71,9 +71,8 @@ public:
     int getDistance() const;
     unsigned int getPathTakenSize() const;
     int getPathTakenValue(int index) const;
-    vector<int>::const_iterator getPathTakenBegin() const;
-    vector<int>::const_iterator getPathTakenEnd() const;
-
+    vector<int>::const_iterator getPathTakenIterBegin() const;
+    vector<int>::const_iterator getPathTakenIterEnd() const;
 
     void resetStats();
     void exploreGraph(int id_start_node, int id_end_node);
@@ -85,6 +84,7 @@ private:
 
     AntColony *ptr_colony_;
 
+    // ant's stats
     vector<int> path_taken_;
     int distance_covered_;
     bool stuck_;
