@@ -14,18 +14,18 @@
 using namespace std;
 
 // TODO config file
-#define sANTS 5
-#define sALPHA 1 //ALPHA - weight of pheromone,
-#define sBETA 2  //BETA - weight of visibility
-#define sRHO 0.5 //RHO - evaporation coefficient
-#define sITER 5
+#define sANTS 500
+#define sALPHA 5   //ALPHA - weight of pheromone,
+#define sBETA 0.25 //BETA - weight of visibility
+#define sRHO 0.5   //RHO - evaporation coefficient
+#define sITER 50
 
 double getRandom();
 
 class AntColony
 {
 public:
-    AntColony(): shortest_path_(INT32_MAX){};
+    AntColony() : shortest_path_(INT32_MAX){};
     ~AntColony();
 
     void findOptimisedRoute(int id_start_node, int id_end_node, int num_iterations);
@@ -52,20 +52,20 @@ private:
     typedef vector<list<int>> Connections;
     Connections connections_; // TODO opis reprezentacji grafu przez wektor list
 
-    int *graph_;           // matrix holding weights between nodes
-    double *visibility_;   // matrix used when determining probability of choosing a node by ant
-    double *pheromone_;    // matrix of pheromone distribution
+    int *graph_;         // matrix holding weights between nodes
+    double *visibility_; // matrix used when determining probability of choosing a node by ant
+    double *pheromone_;  // matrix of pheromone distribution
 
     list<Ant *> ants_;
 
-    vector<int> best_path_;   // attributes holding information about current best path found
+    vector<int> best_path_; // attributes holding information about current best path found
     int shortest_path_;
 };
 
 class AntColony::Ant
 {
 public:
-    Ant(AntColony *ptr_colony) : ptr_colony_(ptr_colony), distance_covered_(0), stuck_(false){ };
+    Ant(AntColony *ptr_colony) : ptr_colony_(ptr_colony), distance_covered_(0), stuck_(false){};
 
     bool isStuck() const;
     int getDistance() const;

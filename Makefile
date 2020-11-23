@@ -1,5 +1,7 @@
 CXX		  := g++
-CXX_FLAGS := -Wall -Wextra -std=c++17
+CXX_FLAGS := -Wall -Wextra -std=c++17 -Ofast
+
+
 
 BIN		:= bin
 SRC		:= src
@@ -14,7 +16,9 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
+$(BIN)/$(EXECUTABLE): 
+	#mkdir -p -m 777 bin	
+	$(SRC)/*.cpp
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@
 
 clean:
