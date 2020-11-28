@@ -2,7 +2,7 @@
 
 Algorithm in C++ to solve discrete optimization problems like for example: TSP.
 
-#Building 
+# Building 
  - clone repository
  `git clone https://github.com/ProtegerPW/ACO-algorithm-V-SEM`
 
