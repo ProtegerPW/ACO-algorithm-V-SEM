@@ -14,11 +14,11 @@
 using namespace std;
 
 // TODO config file
-#define sANTS 500
-#define sALPHA 5   //ALPHA - weight of pheromone,
-#define sBETA 0.25 //BETA - weight of visibility
-#define sRHO 0.5   //RHO - evaporation coefficient
-#define sITER 50
+#define sANTS 5
+#define sALPHA 5 //ALPHA - weight of pheromone,
+#define sBETA 5  //BETA - weight of visibility
+#define sRHO 0.5 //RHO - evaporation coefficient
+#define sITER 500
 
 double getRandom();
 
