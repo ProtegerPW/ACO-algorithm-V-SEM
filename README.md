@@ -12,7 +12,7 @@ Algorithm in C++ to solve discrete optimization problems like for example: TSP.
  `make`
 
  - copy example graph from **src/Graphs** to **bin**
- - run 
+ - run \
  `cd bin` \
  `./ACO.o < fileWithGraph > < beginVertice > < endVertice >`
  
