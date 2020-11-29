@@ -14,7 +14,7 @@ Algorithm in C++ to solve discrete optimization problems like for example: TSP.
  - copy example graph from **src/Graphs** to **bin**
  - run 
  `cd bin` \
- ./ACO.o < fileWithGraph > < beginVertice > < endVertice >`
+ `./ACO.o < fileWithGraph > < beginVertice > < endVertice >`
  
  - or using shell script from **src** - copy it to **bin** folder\
  (script runs program in loops and writes data to file **acoResults**\
