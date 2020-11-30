@@ -11,7 +11,7 @@ Algorithm in C++ to solve discrete optimization problems like for example: TSP.
  - build app using command\
  `make`
 
- - copy example graph from **src/Graphs** to **bin**\
+ - copy example graph from **src/Graphs** to **bin**
  - run \
  `cd bin` \
  `./ACO.o < fileWithGraph > < beginVertice > < endVertice >`
